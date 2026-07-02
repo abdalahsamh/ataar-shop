@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نظام البيع المتكامل - محل العطارة</title>
+
+    <!-- خطوط جوجل -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- أيقونات Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <!-- ملفات CSS -->
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="animations.css" />
+  </head>
+  <body>
+    <!-- ========== شريط التنبيهات (Toast) ========== -->
+    <div id="toastContainer"></div>
+
+    <!-- ========== التطبيق الرئيسي ========== -->
+    <div class="app-container">
+      <!-- ===== القائمة الجانبية (Sidebar) ===== -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <i class="fas fa-seedling"></i>
+            <span>عطارة الصعيدي</span>
+          </div>
+          <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-btn active" data-section="dashboard">
+            <i class="fas fa-chart-pie"></i>
+            <span>الرئيسية</span>
+          </button>
+          <button class="nav-btn" data-section="pos">
+            <i class="fas fa-cash-register"></i>
+            <span>البيع</span>
+          </button>
+          <button class="nav-btn" data-section="products">
+            <i class="fas fa-boxes"></i>
+            <span>المخزون</span>
+          </button>
+          <button class="nav-btn" data-section="invoices">
+            <i class="fas fa-file-invoice"></i>
+            <span>الفواتير</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button id="darkModeToggle">
+            <i class="fas fa-moon"></i>
+            <span>الوضع الليلي</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- ===== المحتوى الرئيسي ===== -->
+      <main class="main-content">
+        <!-- ===== الشريط العلوي ===== -->
+        <header class="top-bar">
+          <div class="top-bar-left">
+            <h2 id="pageTitle">الرئيسية</h2>
+          </div>
+          <div class="top-bar-right">
+            <span class="clock" id="clock">00:00:00</span>
+            <span class="date" id="date">يوم، 1 يناير 2026</span>
+          </div>
+        </header>
+
+        <!-- ===== منطقة الأقسام ===== -->
+        <div class="sections-wrapper">
+          <!-- قسم 1: الرئيسية (Dashboard) -->
+          <section id="section-dashboard" class="section active">
+            <div class="dashboard-grid">
+              <!-- البطاقات الإحصائية -->
+              <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                <div class="stat-info">
+                  <span class="stat-label">إجمالي الأرباح</span>
+                  <span class="stat-number" id="totalProfit">0</span>
+                  <span class="stat-currency">ج.م</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+                <div class="stat-info">
+                  <span class="stat-label">عدد الفواتير</span>
+                  <span class="stat-number" id="totalInvoices">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-box"></i></div>
+                <div class="stat-info">
+                  <span class="stat-label">إجمالي المنتجات</span>
+                  <span class="stat-number" id="totalProducts">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">منتجات منخفضة</span>
+                  <span class="stat-number" id="lowStock">0</span>
+                </div>
+              </div>
+
+              <!-- الرسم البياني -->
+              <div class="chart-card">
+                <h3>نسبة المبيعات حسب التصنيف</h3>
+                <canvas id="salesChart" width="300" height="300"></canvas>
+              </div>
+
+              <!-- آخر الفواتير -->
+              <div class="recent-card">
+                <h3>آخر 5 فواتير</h3>
+                <table class="recent-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>التاريخ</th>
+                      <th>الإجمالي</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentInvoices"></tbody>
+                </table>
+              </div>
+
+              <!-- تنبيهات المخزون -->
+              <div class="alerts-card">
+                <h3>تنبيهات المخزون</h3>
+                <div id="stockAlerts"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- قسم 2: البيع (POS) -->
+          <section id="section-pos" class="section">
+            <div class="pos-container">
+              <!-- المنتجات -->
+              <div class="pos-products">
+                <div class="pos-search">
+                  <input
+                    type="text"
+                    id="posSearch"
+                    placeholder="بحث عن منتج..."
+                  />
+                </div>
+                <div class="pos-grid" id="posGrid">
+                  <!-- هنا تظهر المنتجات -->
+                </div>
+              </div>
+              <!-- عربة التسوق -->
+              <div class="pos-cart">
+                <h3><i class="fas fa-shopping-cart"></i> عربة التسوق</h3>
+                <div class="cart-items" id="cartItems">
+                  <p class="empty-cart">السلة فارغة</p>
+                </div>
+                <div class="cart-summary">
+                  <div class="cart-total">
+                    <span>الإجمالي:</span>
+                    <span id="cartTotal">0</span>
+                    <span>ج.م</span>
+                  </div>
+                  <div class="cart-actions">
+                    <button id="checkoutBtn" class="btn-primary">
+                      <i class="fas fa-check"></i> إنهاء الفاتورة
+                    </button>
+                    <button id="clearCartBtn" class="btn-danger">
+                      <i class="fas fa-trash"></i> تفريغ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- قسم 3: المخزون (Products) -->
+          <section id="section-products" class="section">
+            <div class="products-header">
+              <h3><i class="fas fa-boxes"></i> إدارة المخزون</h3>
+              <button id="addProductBtn" class="btn-primary">
+                <i class="fas fa-plus"></i> إضافة منتج
+              </button>
+            </div>
+            <div class="products-tools">
+              <input
+                type="text"
+                id="productSearch"
+                placeholder="بحث عن منتج..."
+              />
+            </div>
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الاسم</th>
+                  <th>التصنيف</th>
+                  <th>السعر</th>
+                  <th>الكمية</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody"></tbody>
+            </table>
+          </section>
+
+          <!-- قسم 4: الفواتير (Invoices) -->
+          <section id="section-invoices" class="section">
+            <div class="invoices-header">
+              <h3><i class="fas fa-file-invoice"></i> كل الفواتير</h3>
+              <button id="exportInvoicesBtn" class="btn-secondary">
+                <i class="fas fa-file-export"></i> تصدير
+              </button>
+            </div>
+            <table class="invoices-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>التاريخ</th>
+                  <th>عدد المنتجات</th>
+                  <th>الإجمالي</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="invoicesTableBody"></tbody>
+            </table>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ========== مودال إضافة/تعديل منتج ========== -->
+    <div class="modal-overlay" id="productModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="productModalTitle">إضافة منتج جديد</h3>
+          <button class="modal-close" id="productModalClose">&times;</button>
+        </div>
+        <form id="productForm">
+          <input type="hidden" id="editProductId" />
+          <div class="form-group">
+            <label>اسم المنتج</label>
+            <input type="text" id="productName" required />
+          </div>
+          <div class="form-group">
+            <label>التصنيف</label>
+            <select id="productCategory" required>
+              <option value="عطارة">عطارة</option>
+              <option value="حلويات">حلويات</option>
+              <option value="معلبات">معلبات</option>
+              <option value="بقالة">بقالة</option>
+            </select>
+          </div>
+          <!-- نوع المنتج سيتم إضافته بواسطة JavaScript -->
+          <div id="productTypeContainer"></div>
+          <!-- حقول الأسعار حسب النوع -->
+          <div id="weightFields"></div>
+          <button type="submit" class="btn-primary">حفظ</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========== مودال عرض الفاتورة ========== -->
+    <div class="modal-overlay" id="invoiceModal">
+      <div class="modal-content invoice-preview">
+        <div class="modal-header">
+          <h3>تفاصيل الفاتورة</h3>
+          <button class="modal-close" id="invoiceModalClose">&times;</button>
+        </div>
+        <div id="invoiceDetails"></div>
+        <button id="printInvoiceBtn" class="btn-primary">
+          <i class="fas fa-print"></i> طباعة
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== ملفات الجافا سكريبت ========== -->
+    <script src="storage.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="pos.js"></script>
+    <script src="products.js"></script>
+    <script src="invoices.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

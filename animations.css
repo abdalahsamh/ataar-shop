@@ -1,0 +1,107 @@
+/* ===== animations ===== */
+
+/* fly to cart */
+@keyframes flyToCart {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.3) translate(-200px, -200px);
+    opacity: 0;
+  }
+}
+
+.fly-animation {
+  animation: flyToCart 0.6s ease forwards;
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* cart shake */
+@keyframes cartShake {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(8deg);
+  }
+}
+
+.cart-shake {
+  animation: cartShake 0.4s ease;
+}
+
+/* number counter */
+@keyframes countUp {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.count-animation {
+  animation: countUp 0.6s ease forwards;
+}
+
+/* weight selection pop */
+@keyframes weightPop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.weight-pop {
+  animation: weightPop 0.3s ease forwards;
+}
+
+/* modal close with fade */
+@keyframes modalFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* invoice print style */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-preview,
+  .invoice-preview * {
+    visibility: visible;
+  }
+  .invoice-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    padding: 40px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .modal-close,
+  #printInvoiceBtn {
+    display: none !important;
+  }
+}
