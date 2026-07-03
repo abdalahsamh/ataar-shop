@@ -21,44 +21,38 @@ document.addEventListener("DOMContentLoaded", function () {
     btn.addEventListener("click", function () {
       const sectionId = this.dataset.section;
 
-      // update active button
       navBtns.forEach((b) => b.classList.remove("active"));
       this.classList.add("active");
 
-      // show section
       sections.forEach((s) => s.classList.remove("active"));
       const targetSection = document.getElementById(`section-${sectionId}`);
       if (targetSection) {
         targetSection.classList.add("active");
       }
 
-      // update title
       const titleMap = {
         dashboard: "الرئيسية",
         pos: "البيع",
         products: "المخزون",
+        customers: "العملاء",
+        discounts: "الخصومات",
         invoices: "الفواتير",
       };
       pageTitle.textContent = titleMap[sectionId] || sectionId;
 
-      // close sidebar on mobile
       if (window.innerWidth <= 768) {
         sidebar.classList.add("collapsed");
       }
 
-      // refresh dashboard if needed
-      if (sectionId === "dashboard" && window.Dashboard) {
+      if (sectionId === "dashboard" && window.Dashboard)
         window.Dashboard.refresh();
-      }
-      if (sectionId === "pos" && window.POS) {
-        window.POS.render();
-      }
-      if (sectionId === "products" && window.Products) {
-        window.Products.render();
-      }
-      if (sectionId === "invoices" && window.Invoices) {
-        window.Invoices.render();
-      }
+      if (sectionId === "pos" && window.POS) window.POS.render();
+      if (sectionId === "products" && window.Products) window.Products.render();
+      if (sectionId === "customers" && window.Customers)
+        window.Customers.render();
+      if (sectionId === "discounts" && window.Discounts)
+        window.Discounts.render();
+      if (sectionId === "invoices" && window.Invoices) window.Invoices.render();
     });
   });
 
@@ -145,19 +139,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // ===== load initial dashboard =====
-  if (window.Dashboard) {
-    window.Dashboard.init();
-  }
-  if (window.POS) {
-    window.POS.init();
-  }
-  if (window.Products) {
-    window.Products.init();
-  }
-  if (window.Invoices) {
-    window.Invoices.init();
-  }
+  // ===== load all modules =====
+  if (window.Dashboard) window.Dashboard.init();
+  if (window.POS) window.POS.init();
+  if (window.Products) window.Products.init();
+  if (window.Customers) window.Customers.init();
+  if (window.Discounts) window.Discounts.init();
+  if (window.Invoices) window.Invoices.init();
 
-  console.log(" نظام البيع المتكامل جاهز!");
+  console.log("🚀 نظام البيع المتكامل جاهز!");
+  console.log("🔑 كلمة مرور الفواتير: admin123");
 });

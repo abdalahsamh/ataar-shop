@@ -27,10 +27,8 @@ window.Products = {
                 .map((v) => v.toFixed(2))
                 .join(" - ")} ج.م`
             : `${p.price.toFixed(2)} ج.م`;
-
         const stockDisplay =
           p.type === "weighted" ? `${p.stock} كجم` : `${p.stock} قطعة`;
-
         const typeIcon = p.type === "weighted" ? "⚖️" : "🥫";
 
         return `
@@ -41,12 +39,8 @@ window.Products = {
                     <td>${priceDisplay}</td>
                     <td>${stockDisplay}</td>
                     <td>
-                        <button class="action-btn edit" onclick="window.Products.edit(${p.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="window.Products.deleteProduct(${p.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <button class="action-btn edit" onclick="window.Products.edit(${p.id})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete" onclick="window.Products.deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -55,7 +49,6 @@ window.Products = {
   },
 
   setupEvents() {
-    // add product button
     document.getElementById("addProductBtn")?.addEventListener("click", () => {
       this.editingId = null;
       document.getElementById("productModalTitle").textContent =
@@ -63,19 +56,25 @@ window.Products = {
       document.getElementById("productForm").reset();
       document.getElementById("editProductId").value = "";
       document.getElementById("productModal").classList.add("show");
-      this.updateWeightFields(false);
+      this.updateWeightFields(
+        document.getElementById("productType").value === "weighted",
+      );
     });
 
-    // product form submit
     document.getElementById("productForm")?.addEventListener("submit", (e) => {
       e.preventDefault();
       this.saveProduct();
     });
 
-    // search
     document.getElementById("productSearch")?.addEventListener("input", (e) => {
       this.filterProducts(e.target.value);
     });
+
+    document
+      .getElementById("productType")
+      ?.addEventListener("change", function () {
+        window.Products.updateWeightFields(this.value === "weighted");
+      });
   },
 
   updateWeightFields(isWeighted) {
@@ -87,22 +86,10 @@ window.Products = {
                 <div class="form-group">
                     <label>أسعار الأوزان (ج.م)</label>
                     <div class="weight-options">
-                        <div class="weight-input">
-                            <label>1 كجم</label>
-                            <input type="number" id="price_1" placeholder="السعر" step="0.01" min="0" />
-                        </div>
-                        <div class="weight-input">
-                            <label>½ كجم</label>
-                            <input type="number" id="price_0.5" placeholder="السعر" step="0.01" min="0" />
-                        </div>
-                        <div class="weight-input">
-                            <label>¼ كجم</label>
-                            <input type="number" id="price_0.25" placeholder="السعر" step="0.01" min="0" />
-                        </div>
-                        <div class="weight-input">
-                            <label>⅛ كجم</label>
-                            <input type="number" id="price_0.125" placeholder="السعر" step="0.01" min="0" />
-                        </div>
+                        <div><label>1 كجم</label><input type="number" id="price_1" placeholder="السعر" step="0.01" min="0" style="width:100%;padding:8px;margin-top:4px;border:2px solid #e8e0d0;border-radius:8px;" /></div>
+                        <div><label>½ كجم</label><input type="number" id="price_0.5" placeholder="السعر" step="0.01" min="0" style="width:100%;padding:8px;margin-top:4px;border:2px solid #e8e0d0;border-radius:8px;" /></div>
+                        <div><label>¼ كجم</label><input type="number" id="price_0.25" placeholder="السعر" step="0.01" min="0" style="width:100%;padding:8px;margin-top:4px;border:2px solid #e8e0d0;border-radius:8px;" /></div>
+                        <div><label>⅛ كجم</label><input type="number" id="price_0.125" placeholder="السعر" step="0.01" min="0" style="width:100%;padding:8px;margin-top:4px;border:2px solid #e8e0d0;border-radius:8px;" /></div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -127,19 +114,14 @@ window.Products = {
   saveProduct() {
     const name = document.getElementById("productName").value.trim();
     const category = document.getElementById("productCategory").value;
-    const type = document.getElementById("productType")?.value || "weighted";
+    const type = document.getElementById("productType").value;
 
     if (!name) {
       window.showToast("يرجى إدخال اسم المنتج", "error");
       return;
     }
 
-    let productData = {
-      name,
-      category,
-      type,
-      icon: "fa-box",
-    };
+    let productData = { name, category, type, icon: "fa-box" };
 
     if (type === "weighted") {
       const prices = {};
@@ -186,16 +168,12 @@ window.Products = {
     const editId = document.getElementById("editProductId").value;
 
     if (editId) {
-      // update
       const updated = window.Storage.updateProduct(
         parseInt(editId),
         productData,
       );
-      if (updated) {
-        window.showToast("تم تحديث المنتج بنجاح", "success");
-      }
+      if (updated) window.showToast("تم تحديث المنتج بنجاح", "success");
     } else {
-      // add
       window.Storage.addProduct(productData);
       window.showToast("تم إضافة المنتج بنجاح", "success");
     }
@@ -236,7 +214,6 @@ window.Products = {
 
   deleteProduct(id) {
     if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
-
     window.Storage.deleteProduct(id);
     window.showToast("تم حذف المنتج", "warning");
     this.render();
@@ -245,7 +222,6 @@ window.Products = {
   filterProducts(query) {
     const rows = document.querySelectorAll("#productsTableBody tr");
     if (!rows.length) return;
-
     const q = query.toLowerCase().trim();
     rows.forEach((row) => {
       const text = row.textContent.toLowerCase();
@@ -253,29 +229,3 @@ window.Products = {
     });
   },
 };
-
-// add product type field to modal
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("productForm");
-  if (form) {
-    const typeGroup = document.createElement("div");
-    typeGroup.className = "form-group";
-    typeGroup.innerHTML = `
-            <label>نوع المنتج</label>
-            <select id="productType" required>
-                <option value="weighted">وزني (كجم)</option>
-                <option value="fixed">ثابت (قطعة)</option>
-            </select>
-        `;
-    form.insertBefore(
-      typeGroup,
-      form.querySelector("#editProductId").nextSibling,
-    );
-
-    document
-      .getElementById("productType")
-      ?.addEventListener("change", function () {
-        window.Products.updateWeightFields(this.value === "weighted");
-      });
-  }
-});

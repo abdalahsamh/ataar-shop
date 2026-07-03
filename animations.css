@@ -1,13 +1,15 @@
-/* ===== animations ===== */
+/* ============================================ */
+/* ===== ANIMATIONS ===== */
+/* ============================================ */
 
-/* fly to cart */
+/* 1. fly to cart */
 @keyframes flyToCart {
   0% {
-    transform: scale(1) translate(0, 0);
+    transform: scale(1) translate(0, 0) rotate(0deg);
     opacity: 1;
   }
   100% {
-    transform: scale(0.3) translate(-200px, -200px);
+    transform: scale(0.2) translate(-200px, -200px) rotate(720deg);
     opacity: 0;
   }
 }
@@ -19,89 +21,490 @@
   pointer-events: none;
 }
 
-/* cart shake */
+/* 2. cart shake */
 @keyframes cartShake {
   0%,
   100% {
     transform: rotate(0);
   }
-  25% {
+  15% {
+    transform: rotate(-10deg);
+  }
+  30% {
+    transform: rotate(10deg);
+  }
+  45% {
     transform: rotate(-8deg);
   }
-  75% {
+  60% {
     transform: rotate(8deg);
+  }
+  75% {
+    transform: rotate(-4deg);
+  }
+  90% {
+    transform: rotate(4deg);
   }
 }
 
 .cart-shake {
-  animation: cartShake 0.4s ease;
+  animation: cartShake 0.6s ease;
 }
 
-/* number counter */
+/* 3. count up */
 @keyframes countUp {
   0% {
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(0.5) rotate(-10deg);
+  }
+  60% {
+    transform: scale(1.2) rotate(2deg);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
   }
 }
 
 .count-animation {
-  animation: countUp 0.6s ease forwards;
+  animation: countUp 0.8s ease forwards;
 }
 
-/* weight selection pop */
+/* 4. weight pop */
 @keyframes weightPop {
   0% {
-    transform: scale(0.8);
+    transform: scale(0.5) rotate(-20deg);
     opacity: 0;
   }
+  60% {
+    transform: scale(1.1) rotate(5deg);
+  }
   100% {
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
     opacity: 1;
   }
 }
 
 .weight-pop {
-  animation: weightPop 0.3s ease forwards;
+  animation: weightPop 0.4s ease forwards;
 }
 
-/* modal close with fade */
-@keyframes modalFadeOut {
+/* 5. bounce in */
+@keyframes bounceIn {
   0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.bounce-in {
+  animation: bounceIn 0.8s ease forwards;
+}
+
+/* 6. float */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 7. shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #d4af37, #ffd700, #d4af37);
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+
+/* 8. rotate 3D */
+@keyframes rotate3D {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.rotate-3d {
+  animation: rotate3D 4s linear infinite;
+}
+
+/* 9. slide in left */
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-left {
+  animation: slideInLeft 0.6s ease forwards;
+}
+
+/* 10. slide in right */
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-right {
+  animation: slideInRight 0.6s ease forwards;
+}
+
+/* 11. zoom in */
+@keyframes zoomIn {
+  0% {
+    transform: scale(0) rotate(30deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.zoom-in {
+  animation: zoomIn 0.5s ease forwards;
+}
+
+/* 12. fade in up */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* 13. pulse */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 14. glow */
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
+  }
+}
+
+.glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* 15. shake */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+/* 16. flip */
+@keyframes flip {
+  0% {
+    transform: perspective(400px) rotateY(90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(400px) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+.flip {
+  animation: flip 0.6s ease forwards;
+}
+
+/* 17. pop */
+@keyframes pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pop {
+  animation: pop 0.4s ease forwards;
+}
+
+/* 18. swing */
+@keyframes swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(15deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(5deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.swing {
+  animation: swing 0.8s ease;
+}
+
+/* 19. tada */
+@keyframes tada {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  10%,
+  20% {
+    transform: scale(0.9) rotate(-3deg);
+  }
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: scale(1.1) rotate(3deg);
+  }
+  40%,
+  60%,
+  80% {
+    transform: scale(1.1) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.tada {
+  animation: tada 0.8s ease;
+}
+
+/* 20. jelly */
+@keyframes jelly {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  25% {
+    transform: scale(0.9, 1.1);
+  }
+  50% {
+    transform: scale(1.1, 0.9);
+  }
+  75% {
+    transform: scale(0.95, 1.05);
+  }
+}
+
+.jelly {
+  animation: jelly 0.5s ease;
+}
+
+/* 21. card appear */
+@keyframes cardAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 22. float shapes */
+@keyframes floatShape {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate(30px, -30px) rotate(90deg) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, 20px) rotate(180deg) scale(0.9);
+  }
+  75% {
+    transform: translate(20px, 30px) rotate(270deg) scale(1.05);
+  }
+}
+
+/* 23. glow pulse */
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+  }
+}
+
+/* 24. alert pulse */
+@keyframes alertPulse {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
-  100% {
-    opacity: 0;
-    transform: scale(0.9);
+  50% {
+    opacity: 0.6;
+    transform: scale(0.98);
   }
 }
 
-/* invoice print style */
-@media print {
-  body * {
-    visibility: hidden;
+/* 25. clock pulse */
+@keyframes clockPulse {
+  0%,
+  100% {
+    opacity: 1;
   }
-  .invoice-preview,
-  .invoice-preview * {
-    visibility: visible;
+  50% {
+    opacity: 0.6;
   }
-  .invoice-preview {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    background: white;
-    padding: 40px;
-    border-radius: 0;
-    box-shadow: none;
+}
+
+/* 26. logo spin */
+@keyframes logoSpin {
+  0%,
+  100% {
+    transform: rotate(0deg);
   }
-  .modal-close,
-  #printInvoiceBtn {
-    display: none !important;
+  50% {
+    transform: rotate(180deg);
+  }
+}
+
+/* 27. slide in cart */
+@keyframes slideInCart {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 28. modal fade */
+@keyframes modalFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 29. slide in toast */
+@keyframes slideInToast {
+  0% {
+    opacity: 0;
+    transform: translateX(60px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* 30. fade slide in */
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"
       rel="stylesheet"
     />
 
@@ -54,7 +54,15 @@
             <i class="fas fa-boxes"></i>
             <span>المخزون</span>
           </button>
-          <button class="nav-btn" data-section="invoices">
+          <button class="nav-btn" data-section="customers">
+            <i class="fas fa-users"></i>
+            <span>العملاء</span>
+          </button>
+          <button class="nav-btn" data-section="discounts">
+            <i class="fas fa-tags"></i>
+            <span>الخصومات</span>
+          </button>
+          <button class="nav-btn" data-section="invoices" id="invoicesNavBtn">
             <i class="fas fa-file-invoice"></i>
             <span>الفواتير</span>
           </button>
@@ -83,56 +91,230 @@
 
         <!-- ===== منطقة الأقسام ===== -->
         <div class="sections-wrapper">
-          <!-- قسم 1: الرئيسية (Dashboard) -->
+          <!-- ============================================ -->
+          <!-- ===== قسم 1: الرئيسية (Dashboard) ===== -->
+          <!-- ============================================ -->
           <section id="section-dashboard" class="section active">
+            <!-- خلفية متحركة -->
+            <div class="dashboard-bg">
+              <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+                <div class="shape shape-4"></div>
+                <div class="shape shape-5"></div>
+              </div>
+            </div>
+
+            <!-- ===== الكروت الإحصائية ===== -->
             <div class="dashboard-grid">
-              <!-- البطاقات الإحصائية -->
-              <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-coins"></i></div>
+              <div class="stat-card animated-card" data-delay="0">
+                <div class="stat-icon glow-icon">
+                  <i class="fas fa-coins"></i>
+                </div>
                 <div class="stat-info">
-                  <span class="stat-label">إجمالي الأرباح</span>
+                  <span class="stat-label">💰 إجمالي الأرباح</span>
                   <span class="stat-number" id="totalProfit">0</span>
                   <span class="stat-currency">ج.م</span>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> +12.5%
+                  </div>
+                </div>
+                <div class="stat-progress">
+                  <div class="progress-bar" style="width: 85%"></div>
                 </div>
               </div>
-              <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+
+              <div class="stat-card animated-card" data-delay="1">
+                <div class="stat-icon glow-icon">
+                  <i class="fas fa-receipt"></i>
+                </div>
                 <div class="stat-info">
-                  <span class="stat-label">عدد الفواتير</span>
+                  <span class="stat-label">📄 عدد الفواتير</span>
                   <span class="stat-number" id="totalInvoices">0</span>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> +8.3%
+                  </div>
+                </div>
+                <div class="stat-progress">
+                  <div class="progress-bar" style="width: 70%"></div>
                 </div>
               </div>
-              <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-box"></i></div>
+
+              <div class="stat-card animated-card" data-delay="2">
+                <div class="stat-icon glow-icon">
+                  <i class="fas fa-box"></i>
+                </div>
                 <div class="stat-info">
-                  <span class="stat-label">إجمالي المنتجات</span>
+                  <span class="stat-label">📦 إجمالي المنتجات</span>
                   <span class="stat-number" id="totalProducts">0</span>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> +5.2%
+                  </div>
+                </div>
+                <div class="stat-progress">
+                  <div class="progress-bar" style="width: 60%"></div>
                 </div>
               </div>
-              <div class="stat-card">
-                <div class="stat-icon">
+
+              <div class="stat-card animated-card" data-delay="3">
+                <div class="stat-icon glow-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">👥 العملاء</span>
+                  <span class="stat-number" id="totalCustomers">0</span>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> +15.7%
+                  </div>
+                </div>
+                <div class="stat-progress">
+                  <div class="progress-bar" style="width: 90%"></div>
+                </div>
+              </div>
+
+              <div class="stat-card animated-card warning" data-delay="4">
+                <div class="stat-icon glow-icon warning">
                   <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="stat-info">
-                  <span class="stat-label">منتجات منخفضة</span>
+                  <span class="stat-label">⚠️ منتجات منخفضة</span>
                   <span class="stat-number" id="lowStock">0</span>
+                  <div class="stat-trend down">
+                    <i class="fas fa-arrow-down"></i> -3.1%
+                  </div>
+                </div>
+                <div class="stat-progress">
+                  <div class="progress-bar danger" style="width: 30%"></div>
                 </div>
               </div>
 
-              <!-- الرسم البياني -->
-              <div class="chart-card">
-                <h3>نسبة المبيعات حسب التصنيف</h3>
-                <canvas id="salesChart" width="300" height="300"></canvas>
+              <div class="stat-card animated-card" data-delay="5">
+                <div class="stat-icon glow-icon">
+                  <i class="fas fa-weight-hanging"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">⚖️ قيمة المخزون</span>
+                  <span class="stat-number" id="totalStockValue">0</span>
+                  <span class="stat-currency">ج.م</span>
+                  <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> +4.8%
+                  </div>
+                </div>
+                <div class="stat-progress">
+                  <div class="progress-bar" style="width: 75%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== صف الجرد والعملاء ===== -->
+            <div class="dashboard-row">
+              <!-- بطاقة الجرد اليومي -->
+              <div class="inventory-card animated-card" data-delay="6">
+                <h3>📦 الجرد اليومي</h3>
+                <div class="inventory-stats">
+                  <div class="inv-item">
+                    <span class="inv-label">إجمالي المخزون</span>
+                    <span class="inv-value" id="totalStockItems">0</span>
+                    <span class="inv-unit">كجم</span>
+                  </div>
+                  <div class="inv-item">
+                    <span class="inv-label">قيمة المخزون</span>
+                    <span class="inv-value" id="totalStockValueCard">0</span>
+                    <span class="inv-unit">ج.م</span>
+                  </div>
+                  <div class="inv-item">
+                    <span class="inv-label">المنتجات المنخفضة</span>
+                    <span class="inv-value danger" id="lowStockCount">0</span>
+                    <span class="inv-unit">منتج</span>
+                  </div>
+                  <div class="inv-item">
+                    <span class="inv-label">المنتجات النافدة</span>
+                    <span class="inv-value danger" id="outOfStockCount">0</span>
+                    <span class="inv-unit">منتج</span>
+                  </div>
+                </div>
+                <div class="inventory-progress">
+                  <div class="progress-label">
+                    <span>نسبة المخزون</span>
+                    <span id="stockPercentage">0%</span>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div
+                      class="progress-bar-fill"
+                      id="stockProgressBar"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
               </div>
 
-              <!-- آخر الفواتير -->
-              <div class="recent-card">
-                <h3>آخر 5 فواتير</h3>
+              <!-- بطاقة العملاء الأوفياء -->
+              <div class="loyalty-card animated-card" data-delay="7">
+                <h3>🏆 العملاء الأوفياء</h3>
+                <div id="loyalCustomersList">
+                  <p style="text-align: center; color: #6b7a6f; padding: 20px">
+                    جاري التحميل...
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== صف حركة المنتجات ===== -->
+            <div class="dashboard-row">
+              <!-- المنتجات الأكثر مبيعًا -->
+              <div class="top-products-card animated-card" data-delay="8">
+                <h3>🔥 أكثر المنتجات مبيعًا</h3>
+                <div id="topProductsList">
+                  <p style="text-align: center; color: #6b7a6f; padding: 20px">
+                    جاري التحميل...
+                  </p>
+                </div>
+              </div>
+
+              <!-- المنتجات الأقل مبيعًا -->
+              <div class="bottom-products-card animated-card" data-delay="9">
+                <h3>❄️ أقل المنتجات مبيعًا</h3>
+                <div id="bottomProductsList">
+                  <p style="text-align: center; color: #6b7a6f; padding: 20px">
+                    جاري التحميل...
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== الرسوم البيانية ===== -->
+            <div class="dashboard-row">
+              <div class="chart-card animated-card" data-delay="10">
+                <h3>📊 نسبة المبيعات حسب التصنيف</h3>
+                <div class="chart-container">
+                  <canvas id="salesChart" width="300" height="300"></canvas>
+                </div>
+                <div class="chart-legend" id="chartLegend"></div>
+              </div>
+
+              <div class="chart-card animated-card" data-delay="11">
+                <h3>📈 المبيعات اليومية (آخر 7 أيام)</h3>
+                <div class="chart-container">
+                  <canvas
+                    id="dailySalesChart"
+                    width="400"
+                    height="200"
+                  ></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== آخر الفواتير والتنبيهات ===== -->
+            <div class="dashboard-row">
+              <div class="recent-card animated-card" data-delay="12">
+                <h3>🧾 آخر 5 فواتير</h3>
                 <table class="recent-table">
                   <thead>
                     <tr>
                       <th>#</th>
                       <th>التاريخ</th>
+                      <th>العميل</th>
                       <th>الإجمالي</th>
                     </tr>
                   </thead>
@@ -140,18 +322,18 @@
                 </table>
               </div>
 
-              <!-- تنبيهات المخزون -->
-              <div class="alerts-card">
-                <h3>تنبيهات المخزون</h3>
+              <div class="alerts-card animated-card" data-delay="13">
+                <h3>🔔 تنبيهات المخزون</h3>
                 <div id="stockAlerts"></div>
               </div>
             </div>
           </section>
 
-          <!-- قسم 2: البيع (POS) -->
+          <!-- ============================================ -->
+          <!-- ===== قسم 2: البيع (POS) ===== -->
+          <!-- ============================================ -->
           <section id="section-pos" class="section">
             <div class="pos-container">
-              <!-- المنتجات -->
               <div class="pos-products">
                 <div class="pos-search">
                   <input
@@ -160,15 +342,35 @@
                     placeholder="بحث عن منتج..."
                   />
                 </div>
-                <div class="pos-grid" id="posGrid">
-                  <!-- هنا تظهر المنتجات -->
-                </div>
+                <div class="pos-grid" id="posGrid"></div>
               </div>
-              <!-- عربة التسوق -->
               <div class="pos-cart">
                 <h3><i class="fas fa-shopping-cart"></i> عربة التسوق</h3>
+                <button
+                  id="selectCustomerBtn"
+                  class="btn-secondary"
+                  style="width: 100%; margin-bottom: 10px"
+                >
+                  <i class="fas fa-user"></i> اختيار عميل
+                </button>
+                <div
+                  id="customerDisplay"
+                  style="
+                    display: none;
+                    padding: 10px;
+                    background: #d4af37;
+                    color: #1a3c34;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    text-align: center;
+                    margin-bottom: 10px;
+                  "
+                >
+                  👤 العميل: <span id="currentCustomer"></span>
+                </div>
+                <div id="discountDisplay"></div>
                 <div class="cart-items" id="cartItems">
-                  <p class="empty-cart">السلة فارغة</p>
+                  <p class="empty-cart">🛒 السلة فارغة</p>
                 </div>
                 <div class="cart-summary">
                   <div class="cart-total">
@@ -189,7 +391,9 @@
             </div>
           </section>
 
-          <!-- قسم 3: المخزون (Products) -->
+          <!-- ============================================ -->
+          <!-- ===== قسم 3: المخزون (Products) ===== -->
+          <!-- ============================================ -->
           <section id="section-products" class="section">
             <div class="products-header">
               <h3><i class="fas fa-boxes"></i> إدارة المخزون</h3>
@@ -219,32 +423,160 @@
             </table>
           </section>
 
-          <!-- قسم 4: الفواتير (Invoices) -->
-          <section id="section-invoices" class="section">
-            <div class="invoices-header">
-              <h3><i class="fas fa-file-invoice"></i> كل الفواتير</h3>
-              <button id="exportInvoicesBtn" class="btn-secondary">
-                <i class="fas fa-file-export"></i> تصدير
+          <!-- ============================================ -->
+          <!-- ===== قسم 4: العملاء (Customers) ===== -->
+          <!-- ============================================ -->
+          <section id="section-customers" class="section">
+            <div class="products-header">
+              <h3><i class="fas fa-users"></i> إدارة العملاء</h3>
+              <button id="addCustomerBtn" class="btn-primary">
+                <i class="fas fa-plus"></i> إضافة عميل
               </button>
             </div>
-            <table class="invoices-table">
+            <div class="products-tools">
+              <input
+                type="text"
+                id="customerSearch"
+                placeholder="بحث عن عميل..."
+              />
+            </div>
+            <table class="products-table">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>التاريخ</th>
-                  <th>عدد المنتجات</th>
-                  <th>الإجمالي</th>
+                  <th>الاسم</th>
+                  <th>الهاتف</th>
+                  <th>العنوان</th>
+                  <th>عدد الفواتير</th>
+                  <th>إجمالي المشتريات</th>
                   <th>الإجراءات</th>
                 </tr>
               </thead>
-              <tbody id="invoicesTableBody"></tbody>
+              <tbody id="customersTableBody"></tbody>
             </table>
+          </section>
+
+          <!-- ============================================ -->
+          <!-- ===== قسم 5: الخصومات (Discounts) ===== -->
+          <!-- ============================================ -->
+          <section id="section-discounts" class="section">
+            <div class="products-header">
+              <h3><i class="fas fa-tags"></i> إدارة الخصومات</h3>
+              <button id="addDiscountBtn" class="btn-primary">
+                <i class="fas fa-plus"></i> إضافة خصم
+              </button>
+            </div>
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الاسم</th>
+                  <th>النوع</th>
+                  <th>القيمة</th>
+                  <th>الحد الأدنى</th>
+                  <th>الحالة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="discountsTableBody"></tbody>
+            </table>
+          </section>
+
+          <!-- ============================================ -->
+          <!-- ===== قسم 6: الفواتير (Invoices) ===== -->
+          <!-- ============================================ -->
+          <section id="section-invoices" class="section">
+            <div id="invoiceLockScreen">
+              <div
+                style="
+                  max-width: 400px;
+                  margin: 50px auto;
+                  padding: 30px;
+                  background: white;
+                  border-radius: 16px;
+                  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+                  text-align: center;
+                "
+              >
+                <i
+                  class="fas fa-lock"
+                  style="font-size: 48px; color: #d4af37; margin-bottom: 20px"
+                ></i>
+                <h3 style="margin-bottom: 15px">🔒 صفحة الفواتير محمية</h3>
+                <p style="color: #6b7a6f; margin-bottom: 20px">
+                  أدخل كلمة المرور للوصول إلى الفواتير
+                </p>
+                <input
+                  type="password"
+                  id="invoicePassword"
+                  placeholder="كلمة المرور"
+                  style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 2px solid #e8e0d0;
+                    border-radius: 10px;
+                    font-family: &quot;Tajawal&quot;, sans-serif;
+                    font-size: 16px;
+                    margin-bottom: 15px;
+                  "
+                />
+                <button
+                  id="unlockInvoicesBtn"
+                  class="btn-primary"
+                  style="width: 100%"
+                >
+                  <i class="fas fa-unlock"></i> فتح
+                </button>
+                <div
+                  id="invoicePasswordError"
+                  style="color: #dc3545; margin-top: 10px; display: none"
+                >
+                  كلمة المرور غير صحيحة
+                </div>
+              </div>
+            </div>
+
+            <div id="invoiceContent" style="display: none">
+              <div class="products-header">
+                <h3><i class="fas fa-file-invoice"></i> كل الفواتير</h3>
+                <div>
+                  <button
+                    id="lockInvoicesBtn"
+                    class="btn-secondary"
+                    style="margin-left: 10px"
+                  >
+                    <i class="fas fa-lock"></i> قفل
+                  </button>
+                  <button id="exportInvoicesBtn" class="btn-secondary">
+                    <i class="fas fa-file-export"></i> تصدير
+                  </button>
+                </div>
+              </div>
+              <table class="invoices-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>عدد المنتجات</th>
+                    <th>الخصم</th>
+                    <th>الإجمالي</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="invoicesTableBody"></tbody>
+              </table>
+            </div>
           </section>
         </div>
       </main>
     </div>
 
-    <!-- ========== مودال إضافة/تعديل منتج ========== -->
+    <!-- ============================================ -->
+    <!-- ===== المودالات ===== -->
+    <!-- ============================================ -->
+
+    <!-- مودال إضافة/تعديل منتج -->
     <div class="modal-overlay" id="productModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -266,16 +598,115 @@
               <option value="بقالة">بقالة</option>
             </select>
           </div>
-          <!-- نوع المنتج سيتم إضافته بواسطة JavaScript -->
-          <div id="productTypeContainer"></div>
-          <!-- حقول الأسعار حسب النوع -->
+          <div class="form-group">
+            <label>نوع المنتج</label>
+            <select id="productType" required>
+              <option value="weighted">وزني (كجم)</option>
+              <option value="fixed">ثابت (قطعة)</option>
+            </select>
+          </div>
           <div id="weightFields"></div>
           <button type="submit" class="btn-primary">حفظ</button>
         </form>
       </div>
     </div>
 
-    <!-- ========== مودال عرض الفاتورة ========== -->
+    <!-- مودال إضافة/تعديل عميل -->
+    <div class="modal-overlay" id="customerModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="customerModalTitle">إضافة عميل جديد</h3>
+          <button class="modal-close" id="customerModalClose">&times;</button>
+        </div>
+        <form id="customerForm">
+          <input type="hidden" id="editCustomerId" />
+          <div class="form-group">
+            <label>اسم العميل *</label>
+            <input
+              type="text"
+              id="customerName"
+              required
+              placeholder="أدخل اسم العميل"
+            />
+          </div>
+          <div class="form-group">
+            <label>رقم الهاتف</label>
+            <input
+              type="tel"
+              id="customerPhone"
+              placeholder="مثال: 0123456789"
+            />
+          </div>
+          <div class="form-group">
+            <label>العنوان</label>
+            <input
+              type="text"
+              id="customerAddress"
+              placeholder="أدخل عنوان العميل"
+            />
+          </div>
+          <button type="submit" class="btn-primary">حفظ</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- مودال إضافة/تعديل خصم -->
+    <div class="modal-overlay" id="discountModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="discountModalTitle">إضافة خصم جديد</h3>
+          <button class="modal-close" id="discountModalClose">&times;</button>
+        </div>
+        <form id="discountForm">
+          <input type="hidden" id="editDiscountId" />
+          <div class="form-group">
+            <label>اسم الخصم *</label>
+            <input
+              type="text"
+              id="discountName"
+              required
+              placeholder="مثال: خصم العيد"
+            />
+          </div>
+          <div class="form-group">
+            <label>نوع الخصم</label>
+            <select id="discountType" required>
+              <option value="percentage">نسبة مئوية (%)</option>
+              <option value="fixed">قيمة ثابتة (ج.م)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="discountValueLabel">نسبة الخصم (%)</label>
+            <input
+              type="number"
+              id="discountValue"
+              required
+              min="0"
+              step="0.01"
+              placeholder="مثال: 10"
+            />
+          </div>
+          <div class="form-group">
+            <label>الحد الأدنى للشراء (ج.م) - اختياري</label>
+            <input
+              type="number"
+              id="discountMinPurchase"
+              min="0"
+              step="0.01"
+              placeholder="اتركه فارغاً بدون حد"
+            />
+          </div>
+          <div class="form-group">
+            <label
+              ><input type="checkbox" id="discountActive" checked /> نشط</label
+            >
+          </div>
+          <button type="submit" class="btn-primary">حفظ</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- مودال عرض الفاتورة -->
     <div class="modal-overlay" id="invoiceModal">
       <div class="modal-content invoice-preview">
         <div class="modal-header">
@@ -289,8 +720,35 @@
       </div>
     </div>
 
-    <!-- ========== ملفات الجافا سكريبت ========== -->
+    <!-- مودال اختيار العميل -->
+    <div class="modal-overlay" id="customerSelectModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>اختر العميل</h3>
+          <button
+            class="modal-close"
+            onclick="
+              document
+                .getElementById('customerSelectModal')
+                .classList.remove('show')
+            "
+          >
+            &times;
+          </button>
+        </div>
+        <div
+          id="customerSelectList"
+          style="max-height: 400px; overflow-y: auto"
+        ></div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ===== ملفات الجافا سكريبت ===== -->
+    <!-- ============================================ -->
     <script src="storage.js"></script>
+    <script src="customers.js"></script>
+    <script src="discounts.js"></script>
     <script src="dashboard.js"></script>
     <script src="pos.js"></script>
     <script src="products.js"></script>
