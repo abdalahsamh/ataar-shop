@@ -1,56 +1,57 @@
 // ===== invoices.js =====
 
-const INVOICE_PASSWORD = "admin123"; // غير كلمة المرور هنا
+const INVOICE_PASSWORD = "admin123";
 
 window.Invoices = {
   isUnlocked: false,
 
   init() {
-    this.render();
-    this.setupEvents();
     this.checkLockStatus();
+    this.setupEvents();
   },
 
   checkLockStatus() {
     const locked = localStorage.getItem("invoices_locked");
-    if (locked === "false") {
-      this.isUnlocked = true;
-      this.showContent(true);
-    } else {
-      this.isUnlocked = false;
-      this.showContent(false);
-    }
+    this.isUnlocked = locked !== "false";
+    this.showContent(!this.isUnlocked);
   },
 
-  showContent(unlocked) {
+  showContent(locked) {
     const lockScreen = document.getElementById("invoiceLockScreen");
     const content = document.getElementById("invoiceContent");
 
-    if (unlocked) {
+    if (locked) {
+      lockScreen.style.display = "block";
+      content.style.display = "none";
+    } else {
       lockScreen.style.display = "none";
       content.style.display = "block";
       this.render();
-    } else {
-      lockScreen.style.display = "block";
-      content.style.display = "none";
     }
   },
 
   setupEvents() {
-    document
-      .getElementById("unlockInvoicesBtn")
-      ?.addEventListener("click", () => this.unlock());
-    document
-      .getElementById("invoicePassword")
-      ?.addEventListener("keypress", (e) => {
+    const unlockBtn = document.getElementById("unlockInvoicesBtn");
+    if (unlockBtn) {
+      unlockBtn.addEventListener("click", () => this.unlock());
+    }
+
+    const passwordInput = document.getElementById("invoicePassword");
+    if (passwordInput) {
+      passwordInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter") this.unlock();
       });
-    document
-      .getElementById("lockInvoicesBtn")
-      ?.addEventListener("click", () => this.lock());
-    document
-      .getElementById("exportInvoicesBtn")
-      ?.addEventListener("click", () => this.exportInvoices());
+    }
+
+    const lockBtn = document.getElementById("lockInvoicesBtn");
+    if (lockBtn) {
+      lockBtn.addEventListener("click", () => this.lock());
+    }
+
+    const exportBtn = document.getElementById("exportInvoicesBtn");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", () => this.exportInvoices());
+    }
   },
 
   unlock() {
@@ -58,9 +59,9 @@ window.Invoices = {
     const errorEl = document.getElementById("invoicePasswordError");
 
     if (password === INVOICE_PASSWORD) {
-      this.isUnlocked = true;
+      this.isUnlocked = false;
       localStorage.setItem("invoices_locked", "false");
-      this.showContent(true);
+      this.showContent(false);
       document.getElementById("invoicePassword").value = "";
       errorEl.style.display = "none";
       window.showToast("تم فتح الفواتير بنجاح", "success");
@@ -73,16 +74,16 @@ window.Invoices = {
   },
 
   lock() {
-    this.isUnlocked = false;
+    this.isUnlocked = true;
     localStorage.setItem("invoices_locked", "true");
-    this.showContent(false);
+    this.showContent(true);
     document.getElementById("invoicePassword").value = "";
     document.getElementById("invoicePasswordError").style.display = "none";
     window.showToast("تم قفل الفواتير", "info");
   },
 
   render() {
-    if (!this.isUnlocked) return;
+    if (this.isUnlocked) return;
 
     const invoices = window.Storage.loadInvoices();
     const tbody = document.getElementById("invoicesTableBody");
@@ -120,7 +121,7 @@ window.Invoices = {
   },
 
   viewInvoice(id) {
-    if (!this.isUnlocked) return;
+    if (this.isUnlocked) return;
 
     const invoices = window.Storage.loadInvoices();
     const invoice = invoices.find((inv) => inv.id === id);
@@ -188,23 +189,25 @@ window.Invoices = {
         `;
 
     modal.classList.add("show");
-    document
-      .getElementById("printInvoiceBtn")
-      ?.addEventListener("click", () => window.print());
+
+    const printBtn = document.getElementById("printInvoiceBtn");
+    if (printBtn) {
+      printBtn.onclick = () => window.print();
+    }
   },
 
   deleteInvoice(id) {
-    if (!this.isUnlocked) return;
+    if (this.isUnlocked) return;
     if (!confirm("هل أنت متأكد من حذف هذه الفاتورة؟")) return;
 
     window.Storage.deleteInvoice(id);
     window.showToast("تم حذف الفاتورة", "warning");
     this.render();
-    window.Dashboard?.refresh();
+    if (window.Dashboard) window.Dashboard.refresh();
   },
 
   exportInvoices() {
-    if (!this.isUnlocked) return;
+    if (this.isUnlocked) return;
 
     const invoices = window.Storage.loadInvoices();
     if (invoices.length === 0) {
@@ -215,8 +218,7 @@ window.Invoices = {
     let csv = "رقم الفاتورة,التاريخ,العميل,عدد المنتجات,الخصم,الإجمالي\n";
     invoices.forEach((inv, index) => {
       const customerName = inv.customerName || "عميل نقدي";
-      const discountDisplay = inv.discount ? inv.discount.toFixed(2) : "0";
-      csv += `${index + 1},${inv.date || ""},${customerName},${inv.items.length},${discountDisplay},${inv.total.toFixed(2)}\n`;
+      csv += `${index + 1},${inv.date || ""},${customerName},${inv.items.length},${inv.discount || 0},${inv.total}\n`;
     });
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

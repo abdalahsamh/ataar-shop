@@ -2,8 +2,6 @@
 
 window.POS = {
   cart: [],
-  selectedWeight: null,
-  selectedProductId: null,
   currentCustomer: null,
   currentDiscount: null,
 
@@ -25,18 +23,17 @@ window.POS = {
 
     grid.innerHTML = products
       .map((p) => {
-        const typeIcon = p.type === "weighted" ? "⚖️" : "🥫";
         const priceDisplay =
           p.type === "weighted"
             ? `${Object.values(p.prices)[0]?.toFixed(2) || 0} ج.م`
-            : `${p.price.toFixed(2)} ج.م`;
+            : `${p.price?.toFixed(2) || 0} ج.م`;
         const stockDisplay =
           p.type === "weighted" ? `${p.stock} كجم` : `${p.stock} قطعة`;
 
         return `
                 <div class="pos-item" data-id="${p.id}" onclick="window.POS.selectProduct(${p.id})">
                     <div class="product-icon"><i class="fas ${p.icon || "fa-box"}"></i></div>
-                    <div class="product-name">${typeIcon} ${p.name}</div>
+                    <div class="product-name">${p.type === "weighted" ? "⚖️" : "🥫"} ${p.name}</div>
                     <div class="product-price">${priceDisplay}</div>
                     <div class="product-stock">المتبقي: ${stockDisplay}</div>
                 </div>
@@ -122,6 +119,8 @@ window.POS = {
     const product = window.Storage.getProductById(productId);
     if (!product) return;
 
+    const price = customPrice || product.price;
+
     const existing = this.cart.find(
       (item) =>
         item.productId === productId &&
@@ -131,9 +130,8 @@ window.POS = {
 
     if (existing) {
       existing.quantity += quantity;
-      existing.total = existing.quantity * (customPrice || existing.price);
+      existing.total = existing.quantity * price;
     } else {
-      const price = customPrice || product.price;
       this.cart.push({
         productId: productId,
         name: product.name,
@@ -141,62 +139,14 @@ window.POS = {
         weight: product.type === "weighted" ? quantity : null,
         quantity: product.type === "weighted" ? quantity : 1,
         price: price,
+        purchasePrice: product.purchasePrice || 0,
         total: price * (product.type === "weighted" ? quantity : 1),
       });
     }
 
-    this.animateFly(productId);
     this.renderCart();
     this.applyDiscount();
     window.showToast(`تم إضافة ${product.name}`, "success");
-  },
-
-  animateFly(productId) {
-    const item = document.querySelector(`.pos-item[data-id="${productId}"]`);
-    if (!item) return;
-
-    const rect = item.getBoundingClientRect();
-    const flyElement = item.cloneNode(true);
-    flyElement.className = "fly-animation";
-    flyElement.style.position = "fixed";
-    flyElement.style.left = rect.left + "px";
-    flyElement.style.top = rect.top + "px";
-    flyElement.style.width = rect.width + "px";
-    flyElement.style.zIndex = "9999";
-    flyElement.style.pointerEvents = "none";
-    flyElement.style.background = "#d4af37";
-    flyElement.style.borderRadius = "12px";
-    flyElement.style.padding = "10px";
-    flyElement.style.color = "#1a3c34";
-    flyElement.style.fontWeight = "700";
-    flyElement.style.boxShadow = "0 8px 30px rgba(0,0,0,0.3)";
-    document.body.appendChild(flyElement);
-
-    const cart = document.querySelector(".pos-cart");
-    if (cart) {
-      const cartRect = cart.getBoundingClientRect();
-      flyElement.style.transition =
-        "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)";
-      setTimeout(() => {
-        flyElement.style.left =
-          cartRect.left + cartRect.width / 2 - rect.width / 2 + "px";
-        flyElement.style.top =
-          cartRect.top + cartRect.height / 2 - rect.height / 2 + "px";
-        flyElement.style.transform = "scale(0.2) rotate(360deg)";
-        flyElement.style.opacity = "0";
-      }, 50);
-      setTimeout(() => {
-        flyElement.remove();
-        document.querySelector(".pos-cart")?.classList.add("cart-shake");
-        setTimeout(
-          () =>
-            document.querySelector(".pos-cart")?.classList.remove("cart-shake"),
-          400,
-        );
-      }, 700);
-    } else {
-      setTimeout(() => flyElement.remove(), 700);
-    }
   },
 
   renderCart() {
@@ -277,32 +227,42 @@ window.POS = {
   },
 
   setupEvents() {
-    document.getElementById("posSearch")?.addEventListener("input", (e) => {
-      this.filterProducts(e.target.value);
-    });
+    const search = document.getElementById("posSearch");
+    if (search) {
+      search.addEventListener("input", (e) => {
+        this.filterProducts(e.target.value);
+      });
+    }
 
-    document.getElementById("checkoutBtn")?.addEventListener("click", () => {
-      this.checkout();
-    });
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener("click", () => {
+        this.checkout();
+      });
+    }
 
-    document.getElementById("clearCartBtn")?.addEventListener("click", () => {
-      if (this.cart.length === 0) return;
-      if (confirm("هل أنت متأكد من تفريغ السلة؟")) {
-        this.cart = [];
-        this.currentCustomer = null;
-        this.currentDiscount = null;
-        this.renderCart();
-        document.getElementById("customerDisplay").style.display = "none";
-        document.getElementById("discountDisplay").innerHTML = "";
-        window.showToast("تم تفريغ السلة", "info");
-      }
-    });
+    const clearBtn = document.getElementById("clearCartBtn");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        if (this.cart.length === 0) return;
+        if (confirm("هل أنت متأكد من تفريغ السلة؟")) {
+          this.cart = [];
+          this.currentCustomer = null;
+          this.currentDiscount = null;
+          this.renderCart();
+          document.getElementById("customerDisplay").style.display = "none";
+          document.getElementById("discountDisplay").innerHTML = "";
+          window.showToast("تم تفريغ السلة", "info");
+        }
+      });
+    }
 
-    document
-      .getElementById("selectCustomerBtn")
-      ?.addEventListener("click", () => {
+    const selectCustomerBtn = document.getElementById("selectCustomerBtn");
+    if (selectCustomerBtn) {
+      selectCustomerBtn.addEventListener("click", () => {
         this.selectCustomer();
       });
+    }
   },
 
   filterProducts(query) {
@@ -314,9 +274,8 @@ window.POS = {
     });
   },
 
-  // ===== Customer functions =====
   selectCustomer() {
-    const customers = window.Customers.loadCustomers();
+    const customers = window.Storage.loadCustomers();
     if (customers.length === 0) {
       window.showToast("لا يوجد عملاء. أضف عميلاً أولاً", "warning");
       return;
@@ -330,12 +289,9 @@ window.POS = {
       .map(
         (c) => `
             <button onclick="window.POS.setCustomer(${c.id})" 
-                    style="display:block;width:100%;padding:12px;margin:5px 0;border:2px solid #e8e0d0;border-radius:10px;background:white;font-family:'Tajawal',sans-serif;font-size:16px;cursor:pointer;transition:all 0.3s ease;text-align:right;"
-                    onmouseover="this.style.borderColor='#d4af37';this.style.background='#faf8f4';"
-                    onmouseout="this.style.borderColor='#e8e0d0';this.style.background='white';">
+                    style="display:block;width:100%;padding:12px;margin:5px 0;border:2px solid #e8e0d0;border-radius:10px;background:white;font-family:'Tajawal',sans-serif;font-size:16px;cursor:pointer;transition:all 0.3s ease;text-align:right;">
                 <strong>${c.name}</strong>
                 ${c.phone ? `<span style="color:#6b7a6f;font-size:14px;margin-right:10px;">📱 ${c.phone}</span>` : ""}
-                ${c.address ? `<span style="color:#6b7a6f;font-size:14px;margin-right:10px;">📍 ${c.address}</span>` : ""}
             </button>
         `,
       )
@@ -345,7 +301,7 @@ window.POS = {
   },
 
   setCustomer(customerId) {
-    const customer = window.Customers.getCustomer(customerId);
+    const customer = window.Storage.getCustomerById(customerId);
     if (!customer) return;
 
     this.currentCustomer = customer;
@@ -362,7 +318,6 @@ window.POS = {
     this.applyDiscount();
   },
 
-  // ===== Discount functions =====
   applyDiscount() {
     const total = this.cart.reduce((sum, item) => sum + item.total, 0);
     if (total === 0) {
@@ -372,12 +327,7 @@ window.POS = {
       return;
     }
 
-    const customerId = this.currentCustomer?.id || null;
-    const discountResult = window.Discounts.calculateDiscount(
-      total,
-      customerId,
-    );
-
+    const discountResult = window.Discounts.calculateDiscount(total);
     if (discountResult && discountResult.amount > 0) {
       this.currentDiscount = discountResult;
       this.updateDiscountUI(discountResult);
@@ -406,58 +356,41 @@ window.POS = {
     }
   },
 
-  // ===== Checkout =====
   checkout() {
     if (this.cart.length === 0) {
       window.showToast("السلة فارغة!", "error");
       return;
     }
 
-    let canCheckout = true;
-    const updates = [];
-
+    // Check stock
     for (const item of this.cart) {
       const product = window.Storage.getProductById(item.productId);
       if (!product) {
         window.showToast(`المنتج ${item.name} غير موجود`, "error");
-        canCheckout = false;
-        break;
+        return;
       }
 
       if (item.type === "weighted") {
-        const needed = item.quantity * item.weight;
-        if (product.stock < needed) {
-          window.showToast(
-            `المخزون غير كافٍ لـ ${item.name} (المتبقي: ${product.stock} كجم)`,
-            "error",
-          );
-          canCheckout = false;
-          break;
+        if (product.stock < item.quantity * item.weight) {
+          window.showToast(`المخزون غير كافٍ لـ ${item.name}`, "error");
+          return;
         }
-        updates.push({ id: item.productId, qty: needed, weighted: true });
       } else {
         if (product.stock < item.quantity) {
-          window.showToast(
-            `المخزون غير كافٍ لـ ${item.name} (المتبقي: ${product.stock})`,
-            "error",
-          );
-          canCheckout = false;
-          break;
+          window.showToast(`المخزون غير كافٍ لـ ${item.name}`, "error");
+          return;
         }
-        updates.push({
-          id: item.productId,
-          qty: item.quantity,
-          weighted: false,
-        });
       }
     }
 
-    if (!canCheckout) return;
-
-    for (const update of updates) {
-      window.Storage.updateStock(update.id, update.qty, update.weighted);
+    // Deduct stock
+    for (const item of this.cart) {
+      const qty =
+        item.type === "weighted" ? item.quantity * item.weight : item.quantity;
+      window.Storage.updateStock(item.productId, qty);
     }
 
+    // Calculate totals
     const subtotal = this.cart.reduce((sum, item) => sum + item.total, 0);
     let discountAmount = 0;
     let discountName = null;
@@ -469,6 +402,7 @@ window.POS = {
       finalTotal = this.currentDiscount.finalTotal;
     }
 
+    // Create invoice
     const invoice = {
       items: this.cart.map((item) => ({
         productId: item.productId,
@@ -477,6 +411,7 @@ window.POS = {
         weight: item.weight,
         quantity: item.quantity,
         price: item.price,
+        purchasePrice: item.purchasePrice || 0,
         total: item.total,
       })),
       subtotal: subtotal,
@@ -499,7 +434,7 @@ window.POS = {
     document.getElementById("customerDisplay").style.display = "none";
     document.getElementById("discountDisplay").innerHTML = "";
 
-    window.Dashboard?.refresh();
+    if (window.Dashboard) window.Dashboard.refresh();
     window.showToast("تم إنهاء الفاتورة بنجاح 🎉", "success");
   },
 
@@ -562,8 +497,10 @@ window.POS = {
         `;
 
     modal.classList.add("show");
-    document
-      .getElementById("printInvoiceBtn")
-      ?.addEventListener("click", () => window.print());
+
+    const printBtn = document.getElementById("printInvoiceBtn");
+    if (printBtn) {
+      printBtn.onclick = () => window.print();
+    }
   },
 };

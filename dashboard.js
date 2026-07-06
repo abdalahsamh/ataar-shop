@@ -1,9 +1,6 @@
 // ===== dashboard.js =====
 
 window.Dashboard = {
-  chartInstance: null,
-  dailyChartInstance: null,
-
   init() {
     this.refresh();
     this.startLiveUpdates();
@@ -12,33 +9,35 @@ window.Dashboard = {
   refresh() {
     const products = window.Storage.loadProducts();
     const invoices = window.Storage.loadInvoices();
-    const customers = window.Customers.loadCustomers();
+    const customers = window.Storage.loadCustomers();
+    const suppliers = window.Storage.loadSuppliers();
 
     // Stats
     const totalProducts = products.length;
     const totalInvoices = invoices.length;
     const totalProfit = invoices.reduce((sum, inv) => sum + inv.total, 0);
     const totalCustomers = customers.length;
+    const totalSuppliers = suppliers.length;
     const totalStockValue = products.reduce((sum, p) => {
+      let sellPrice = 0;
       if (p.type === "weighted") {
-        const avgPrice =
-          Object.values(p.prices).reduce((a, b) => a + b, 0) /
-          Object.values(p.prices).length;
-        return sum + avgPrice * p.stock;
+        sellPrice = Object.values(p.prices)[0] || 0;
       } else {
-        return sum + p.price * p.stock;
+        sellPrice = p.price || 0;
       }
+      return sum + sellPrice * p.stock;
     }, 0);
     const lowStock = products.filter((p) => {
       return p.type === "weighted" ? p.stock < 5 : p.stock < 10;
     }).length;
 
     // Animate numbers
-    this.animateNumber("totalProfit", totalProfit, "ج.م");
+    this.animateNumber("totalProfit", totalProfit);
     this.animateNumber("totalInvoices", totalInvoices);
     this.animateNumber("totalProducts", totalProducts);
     this.animateNumber("totalCustomers", totalCustomers);
-    this.animateNumber("totalStockValue", totalStockValue, "ج.م");
+    this.animateNumber("totalSuppliers", totalSuppliers);
+    this.animateNumber("totalStockValue", totalStockValue);
     this.animateNumber("lowStock", lowStock);
 
     // Charts
@@ -52,15 +51,18 @@ window.Dashboard = {
     // Inventory
     this.renderInventory(products);
 
-    // Top & Bottom products
+    // Top products
     this.renderTopProducts(invoices);
     this.renderBottomProducts(invoices, products);
 
     // Loyal customers
     this.renderLoyalCustomers(invoices, customers);
+
+    // Top profit product
+    this.renderTopProfitProduct(products);
   },
 
-  animateNumber(elementId, target, suffix = "") {
+  animateNumber(elementId, target) {
     const element = document.getElementById(elementId);
     if (!element) return;
 
@@ -319,44 +321,52 @@ window.Dashboard = {
     }
 
     container.innerHTML = alerts
-      .map(
-        (p, index) => `
-            <div class="alert-item" style="animation:slideInLeft 0.5s ease ${index * 0.1}s forwards;">
-                <span class="alert-name">${p.name}</span>
-                <span>المتبقي: ${p.stock} ${p.unit === "kg" ? "كجم" : "قطعة"}</span>
-            </div>
-        `,
-      )
+      .map((p, index) => {
+        const supplier = window.Storage.getSupplierById(p.supplierId);
+        const supplierName = supplier ? supplier.name : "";
+        return `
+                <div class="alert-item" style="animation:slideInLeft 0.5s ease ${index * 0.1}s forwards;">
+                    <span class="alert-name">${p.name}</span>
+                    <span>المتبقي: ${p.stock} ${p.unit === "kg" ? "كجم" : "قطعة"}</span>
+                    ${supplierName ? `<span style="font-size:12px;color:#6b7a6f;">المورد: ${supplierName}</span>` : ""}
+                </div>
+            `;
+      })
       .join("");
   },
 
-  // ===== Inventory =====
   renderInventory(products) {
     let totalStock = 0;
-    let totalValue = 0;
+    let totalSellValue = 0;
+    let totalPurchaseValue = 0;
     let lowStock = 0;
     let outOfStock = 0;
 
     products.forEach((p) => {
+      let sellPrice = 0;
       if (p.type === "weighted") {
+        sellPrice = Object.values(p.prices)[0] || 0;
         totalStock += p.stock;
-        const avgPrice =
-          Object.values(p.prices).reduce((a, b) => a + b, 0) /
-          Object.values(p.prices).length;
-        totalValue += avgPrice * p.stock;
-        if (p.stock <= 0) outOfStock++;
-        else if (p.stock < 5) lowStock++;
       } else {
-        totalValue += p.price * p.stock;
-        if (p.stock <= 0) outOfStock++;
-        else if (p.stock < 10) lowStock++;
+        sellPrice = p.price || 0;
       }
+      const buyPrice = p.purchasePrice || 0;
+      totalSellValue += sellPrice * p.stock;
+      totalPurchaseValue += buyPrice * p.stock;
+
+      if (p.stock <= 0) outOfStock++;
+      else if (p.stock < (p.type === "weighted" ? 5 : 10)) lowStock++;
     });
 
     document.getElementById("totalStockItems").textContent =
       totalStock.toFixed(1);
     document.getElementById("totalStockValueCard").textContent =
-      totalValue.toFixed(0);
+      totalSellValue.toFixed(0);
+    document.getElementById("totalPurchaseValueCard").textContent =
+      totalPurchaseValue.toFixed(0);
+    document.getElementById("expectedProfitCard").textContent = (
+      totalSellValue - totalPurchaseValue
+    ).toFixed(0);
     document.getElementById("lowStockCount").textContent = lowStock;
     document.getElementById("outOfStockCount").textContent = outOfStock;
 
@@ -374,7 +384,6 @@ window.Dashboard = {
     }
   },
 
-  // ===== Top Products =====
   renderTopProducts(invoices) {
     const container = document.getElementById("topProductsList");
     if (!container) return;
@@ -416,7 +425,6 @@ window.Dashboard = {
       .join("");
   },
 
-  // ===== Bottom Products =====
   renderBottomProducts(invoices, products) {
     const container = document.getElementById("bottomProductsList");
     if (!container) return;
@@ -462,7 +470,6 @@ window.Dashboard = {
       .join("");
   },
 
-  // ===== Loyal Customers =====
   renderLoyalCustomers(invoices, customers) {
     const container = document.getElementById("loyalCustomersList");
     if (!container) return;
@@ -504,6 +511,36 @@ window.Dashboard = {
         `,
       )
       .join("");
+  },
+
+  renderTopProfitProduct(products) {
+    let topProduct = null;
+    let maxProfit = 0;
+
+    products.forEach((p) => {
+      let sellPrice = 0;
+      if (p.type === "weighted") {
+        sellPrice = Object.values(p.prices)[0] || 0;
+      } else {
+        sellPrice = p.price || 0;
+      }
+      const buyPrice = p.purchasePrice || 0;
+      const profit = sellPrice - buyPrice;
+      if (profit > maxProfit && p.stock > 0) {
+        maxProfit = profit;
+        topProduct = p;
+      }
+    });
+
+    const el = document.getElementById("topProfitProduct");
+    if (el) {
+      if (topProduct) {
+        el.textContent = `${topProduct.name} (${maxProfit.toFixed(2)} ج.م)`;
+        el.style.fontSize = "16px";
+      } else {
+        el.textContent = "لا توجد بيانات";
+      }
+    }
   },
 
   startLiveUpdates() {

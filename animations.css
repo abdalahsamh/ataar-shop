@@ -1,5 +1,5 @@
 /* ============================================ */
-/* ===== ANIMATIONS ===== */
+/* ===== 30 ANIMATION ===== */
 /* ============================================ */
 
 /* 1. fly to cart */
@@ -13,7 +13,6 @@
     opacity: 0;
   }
 }
-
 .fly-animation {
   animation: flyToCart 0.6s ease forwards;
   position: fixed;
@@ -46,7 +45,6 @@
     transform: rotate(4deg);
   }
 }
-
 .cart-shake {
   animation: cartShake 0.6s ease;
 }
@@ -65,7 +63,6 @@
     transform: scale(1) rotate(0deg);
   }
 }
-
 .count-animation {
   animation: countUp 0.8s ease forwards;
 }
@@ -84,7 +81,6 @@
     opacity: 1;
   }
 }
-
 .weight-pop {
   animation: weightPop 0.4s ease forwards;
 }
@@ -106,7 +102,6 @@
     opacity: 1;
   }
 }
-
 .bounce-in {
   animation: bounceIn 0.8s ease forwards;
 }
@@ -121,7 +116,6 @@
     transform: translateY(-10px);
   }
 }
-
 .float {
   animation: float 3s ease-in-out infinite;
 }
@@ -135,7 +129,6 @@
     background-position: 200% center;
   }
 }
-
 .shimmer {
   background: linear-gradient(90deg, #d4af37, #ffd700, #d4af37);
   background-size: 200% auto;
@@ -151,7 +144,6 @@
     transform: rotateY(360deg);
   }
 }
-
 .rotate-3d {
   animation: rotate3D 4s linear infinite;
 }
@@ -167,7 +159,6 @@
     opacity: 1;
   }
 }
-
 .slide-left {
   animation: slideInLeft 0.6s ease forwards;
 }
@@ -183,7 +174,6 @@
     opacity: 1;
   }
 }
-
 .slide-right {
   animation: slideInRight 0.6s ease forwards;
 }
@@ -199,7 +189,6 @@
     opacity: 1;
   }
 }
-
 .zoom-in {
   animation: zoomIn 0.5s ease forwards;
 }
@@ -215,7 +204,6 @@
     transform: translateY(0);
   }
 }
-
 .fade-up {
   animation: fadeInUp 0.6s ease forwards;
 }
@@ -230,7 +218,6 @@
     transform: scale(1.05);
   }
 }
-
 .pulse {
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -245,7 +232,6 @@
     box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
   }
 }
-
 .glow {
   animation: glow 2s ease-in-out infinite;
 }
@@ -270,7 +256,6 @@
     transform: translateX(5px);
   }
 }
-
 .shake {
   animation: shake 0.5s ease;
 }
@@ -286,7 +271,6 @@
     opacity: 1;
   }
 }
-
 .flip {
   animation: flip 0.6s ease forwards;
 }
@@ -305,7 +289,6 @@
     opacity: 1;
   }
 }
-
 .pop {
   animation: pop 0.4s ease forwards;
 }
@@ -331,7 +314,6 @@
     transform: rotate(0deg);
   }
 }
-
 .swing {
   animation: swing 0.8s ease;
 }
@@ -360,7 +342,6 @@
     transform: scale(1) rotate(0deg);
   }
 }
-
 .tada {
   animation: tada 0.8s ease;
 }
@@ -381,7 +362,6 @@
     transform: scale(0.95, 1.05);
   }
 }
-
 .jelly {
   animation: jelly 0.5s ease;
 }
@@ -506,5 +486,38 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 31. splash zoom */
+@keyframes splashZoom {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 32. splash fade out */
+@keyframes splashFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* 33. load bar */
+@keyframes loadBar {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
   }
 }

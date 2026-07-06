@@ -7,40 +7,42 @@ window.Customers = {
   },
 
   loadCustomers() {
-    let customers = localStorage.getItem("herb_customers");
-    return customers ? JSON.parse(customers) : [];
+    return window.Storage.loadCustomers();
   },
 
   saveCustomers(customers) {
-    localStorage.setItem("herb_customers", JSON.stringify(customers));
+    window.Storage.saveCustomers(customers);
   },
 
   render() {
-    const customers = this.loadCustomers();
     const tbody = document.getElementById("customersTableBody");
     if (!tbody) return;
 
+    const customers = this.loadCustomers();
     if (customers.length === 0) {
       tbody.innerHTML =
         '<tr><td colspan="7" style="text-align:center;color:#6b7a6f;">لا يوجد عملاء</td></tr>';
       return;
     }
 
+    const invoices = window.Storage.loadInvoices();
+
     tbody.innerHTML = customers
       .map((c, index) => {
-        const invoices = window.Storage.loadInvoices().filter(
+        const customerInvoices = invoices.filter(
           (inv) => inv.customerId === c.id,
         );
-        const totalSpent = invoices.reduce((sum, inv) => sum + inv.total, 0);
-        const invoiceCount = invoices.length;
-
+        const totalSpent = customerInvoices.reduce(
+          (sum, inv) => sum + inv.total,
+          0,
+        );
         return `
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${c.name}</td>
+                    <td>👤 ${c.name}</td>
                     <td>${c.phone || "-"}</td>
                     <td>${c.address || "-"}</td>
-                    <td>${invoiceCount}</td>
+                    <td>${customerInvoices.length}</td>
                     <td><strong>${totalSpent.toFixed(2)}</strong> ج.م</td>
                     <td>
                         <button class="action-btn edit" onclick="window.Customers.edit(${c.id})"><i class="fas fa-edit"></i></button>
@@ -53,24 +55,38 @@ window.Customers = {
   },
 
   setupEvents() {
-    document.getElementById("addCustomerBtn")?.addEventListener("click", () => {
-      document.getElementById("customerModalTitle").textContent =
-        "إضافة عميل جديد";
-      document.getElementById("customerForm").reset();
-      document.getElementById("editCustomerId").value = "";
-      document.getElementById("customerModal").classList.add("show");
-    });
+    const addBtn = document.getElementById("addCustomerBtn");
+    if (addBtn) {
+      addBtn.addEventListener("click", () => {
+        document.getElementById("customerModalTitle").textContent =
+          "إضافة عميل جديد";
+        document.getElementById("customerForm").reset();
+        document.getElementById("editCustomerId").value = "";
+        document.getElementById("customerModal").classList.add("show");
+      });
+    }
 
-    document.getElementById("customerForm")?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      this.saveCustomer();
-    });
+    const form = document.getElementById("customerForm");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.saveCustomer();
+      });
+    }
 
-    document
-      .getElementById("customerSearch")
-      ?.addEventListener("input", (e) => {
+    const search = document.getElementById("customerSearch");
+    if (search) {
+      search.addEventListener("input", (e) => {
         this.filterCustomers(e.target.value);
       });
+    }
+
+    const closeBtn = document.getElementById("customerModalClose");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        document.getElementById("customerModal").classList.remove("show");
+      });
+    }
   },
 
   saveCustomer() {
@@ -106,7 +122,7 @@ window.Customers = {
     this.saveCustomers(customers);
     document.getElementById("customerModal").classList.remove("show");
     this.render();
-    window.Dashboard?.refresh();
+    if (window.Dashboard) window.Dashboard.refresh();
   },
 
   edit(id) {
@@ -130,7 +146,7 @@ window.Customers = {
     this.saveCustomers(customers);
     window.showToast("تم حذف العميل", "warning");
     this.render();
-    window.Dashboard?.refresh();
+    if (window.Dashboard) window.Dashboard.refresh();
   },
 
   filterCustomers(query) {
@@ -144,12 +160,6 @@ window.Customers = {
   },
 
   getCustomer(id) {
-    const customers = this.loadCustomers();
-    return customers.find((c) => c.id === id);
-  },
-
-  getCustomerInvoices(customerId) {
-    const invoices = window.Storage.loadInvoices();
-    return invoices.filter((inv) => inv.customerId === customerId);
+    return this.loadCustomers().find((c) => c.id === id);
   },
 };
