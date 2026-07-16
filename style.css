@@ -1853,3 +1853,28 @@ body.dark-mode .profit-card {
 .stat-card:nth-child(6) {
   border-right-color: #dc3545;
 }
+/* ===== Filter Buttons ===== */
+.btn-filter {
+  background: white;
+  border: 2px solid #e8e0d0;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-family: "Tajawal", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a3c34;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-filter:hover {
+  border-color: #d4af37;
+  transform: scale(1.05);
+}
+
+.active-filter {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #1a3c34;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}

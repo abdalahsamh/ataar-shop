@@ -1,57 +1,68 @@
 // ===== invoices.js =====
 
-const INVOICE_PASSWORD = "admin123";
+const INVOICE_PASSWORD = "admin123"; // غير كلمة المرور هنا
 
 window.Invoices = {
   isUnlocked: false,
+  currentFilter: "all", // all, today, week, month, custom
+  filterFrom: null,
+  filterTo: null,
 
   init() {
-    this.checkLockStatus();
+    this.render();
     this.setupEvents();
+    this.checkLockStatus();
+    this.setDefaultDates();
+  },
+
+  setDefaultDates() {
+    const today = new Date().toISOString().split("T")[0];
+    const fromInput = document.getElementById("filterDateFrom");
+    const toInput = document.getElementById("filterDateTo");
+    if (fromInput) fromInput.value = today;
+    if (toInput) toInput.value = today;
   },
 
   checkLockStatus() {
     const locked = localStorage.getItem("invoices_locked");
-    this.isUnlocked = locked !== "false";
-    this.showContent(!this.isUnlocked);
+    if (locked === "false") {
+      this.isUnlocked = true;
+      this.showContent(true);
+    } else {
+      this.isUnlocked = false;
+      this.showContent(false);
+    }
   },
 
-  showContent(locked) {
+  showContent(unlocked) {
     const lockScreen = document.getElementById("invoiceLockScreen");
     const content = document.getElementById("invoiceContent");
 
-    if (locked) {
-      lockScreen.style.display = "block";
-      content.style.display = "none";
-    } else {
+    if (unlocked) {
       lockScreen.style.display = "none";
       content.style.display = "block";
       this.render();
+    } else {
+      lockScreen.style.display = "block";
+      content.style.display = "none";
     }
   },
 
   setupEvents() {
-    const unlockBtn = document.getElementById("unlockInvoicesBtn");
-    if (unlockBtn) {
-      unlockBtn.addEventListener("click", () => this.unlock());
-    }
-
-    const passwordInput = document.getElementById("invoicePassword");
-    if (passwordInput) {
-      passwordInput.addEventListener("keypress", (e) => {
+    document
+      .getElementById("unlockInvoicesBtn")
+      ?.addEventListener("click", () => this.unlock());
+    document
+      .getElementById("invoicePassword")
+      ?.addEventListener("keypress", (e) => {
         if (e.key === "Enter") this.unlock();
       });
-    }
-
-    const lockBtn = document.getElementById("lockInvoicesBtn");
-    if (lockBtn) {
-      lockBtn.addEventListener("click", () => this.lock());
-    }
-
-    const exportBtn = document.getElementById("exportInvoicesBtn");
-    if (exportBtn) {
-      exportBtn.addEventListener("click", () => this.exportInvoices());
-    }
+    document
+      .getElementById("lockInvoicesBtn")
+      ?.addEventListener("click", () => this.lock());
+    document
+      .getElementById("exportInvoicesBtn")
+      ?.addEventListener("click", () => this.exportInvoices());
   },
 
   unlock() {
@@ -59,9 +70,9 @@ window.Invoices = {
     const errorEl = document.getElementById("invoicePasswordError");
 
     if (password === INVOICE_PASSWORD) {
-      this.isUnlocked = false;
+      this.isUnlocked = true;
       localStorage.setItem("invoices_locked", "false");
-      this.showContent(false);
+      this.showContent(true);
       document.getElementById("invoicePassword").value = "";
       errorEl.style.display = "none";
       window.showToast("تم فتح الفواتير بنجاح", "success");
@@ -74,28 +85,133 @@ window.Invoices = {
   },
 
   lock() {
-    this.isUnlocked = true;
+    this.isUnlocked = false;
     localStorage.setItem("invoices_locked", "true");
-    this.showContent(true);
+    this.showContent(false);
     document.getElementById("invoicePassword").value = "";
     document.getElementById("invoicePasswordError").style.display = "none";
     window.showToast("تم قفل الفواتير", "info");
   },
 
-  render() {
-    if (this.isUnlocked) return;
+  // ===== دوال الفلتر الجديدة =====
+  setFilter(filterType) {
+    this.currentFilter = filterType;
+    // تحديث شكل الأزرار
+    document
+      .querySelectorAll(".btn-filter")
+      .forEach((btn) => btn.classList.remove("active-filter"));
+    const btnMap = {
+      today: "filterToday",
+      week: "filterWeek",
+      month: "filterMonth",
+      all: "filterAll",
+    };
+    const activeBtn = document.getElementById(btnMap[filterType]);
+    if (activeBtn) activeBtn.classList.add("active-filter");
 
+    // إعادة التصيير
+    this.render();
+  },
+
+  setCustomFilter() {
+    const from = document.getElementById("filterDateFrom").value;
+    const to = document.getElementById("filterDateTo").value;
+    if (!from || !to) {
+      window.showToast("يرجى اختيار تاريخ البداية والنهاية", "warning");
+      return;
+    }
+    if (from > to) {
+      window.showToast(
+        "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية",
+        "error",
+      );
+      return;
+    }
+    this.currentFilter = "custom";
+    this.filterFrom = from;
+    this.filterTo = to;
+
+    // إزالة التظليل من الأزرار السريعة
+    document
+      .querySelectorAll(".btn-filter")
+      .forEach((btn) => btn.classList.remove("active-filter"));
+
+    this.render();
+    window.showToast(`تم التصفية من ${from} إلى ${to}`, "success");
+  },
+
+  // ===== دالة التصفية الأساسية =====
+  getFilteredInvoices() {
     const invoices = window.Storage.loadInvoices();
+    const now = new Date();
+    let filtered = [...invoices];
+
+    switch (this.currentFilter) {
+      case "today":
+        const todayStr = now.toISOString().split("T")[0];
+        filtered = invoices.filter((inv) => {
+          if (!inv.date) return false;
+          const invDate = new Date(inv.date);
+          const invStr = invDate.toISOString().split("T")[0];
+          return invStr === todayStr;
+        });
+        break;
+
+      case "week":
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        filtered = invoices.filter((inv) => {
+          if (!inv.date) return false;
+          const invDate = new Date(inv.date);
+          return invDate >= weekStart;
+        });
+        break;
+
+      case "month":
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        filtered = invoices.filter((inv) => {
+          if (!inv.date) return false;
+          const invDate = new Date(inv.date);
+          return invDate >= monthStart;
+        });
+        break;
+
+      case "custom":
+        if (this.filterFrom && this.filterTo) {
+          const fromDate = new Date(this.filterFrom);
+          const toDate = new Date(this.filterTo);
+          toDate.setHours(23, 59, 59, 999);
+
+          filtered = invoices.filter((inv) => {
+            if (!inv.date) return false;
+            const invDate = new Date(inv.date);
+            return invDate >= fromDate && invDate <= toDate;
+          });
+        }
+        break;
+
+      default: // 'all'
+        break;
+    }
+
+    return filtered;
+  },
+
+  render() {
+    if (!this.isUnlocked) return;
+
+    const filteredInvoices = this.getFilteredInvoices();
     const tbody = document.getElementById("invoicesTableBody");
     if (!tbody) return;
 
-    if (invoices.length === 0) {
+    if (filteredInvoices.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="7" style="text-align:center;color:#6b7a6f;">لا توجد فواتير</td></tr>';
+        '<tr><td colspan="7" style="text-align:center;color:#6b7a6f;">لا توجد فواتير في هذه الفترة</td></tr>';
       return;
     }
 
-    tbody.innerHTML = invoices
+    tbody.innerHTML = filteredInvoices
       .map((inv, index) => {
         const customerName = inv.customerName || "عميل نقدي";
         const discountDisplay = inv.discount
@@ -121,7 +237,7 @@ window.Invoices = {
   },
 
   viewInvoice(id) {
-    if (this.isUnlocked) return;
+    if (!this.isUnlocked) return;
 
     const invoices = window.Storage.loadInvoices();
     const invoice = invoices.find((inv) => inv.id === id);
@@ -161,7 +277,7 @@ window.Invoices = {
                             (item) => `
                             <tr style="border-bottom:1px solid #f0ebe0;">
                                 <td style="padding:8px;">${item.name}</td>
-                                <td style="text-align:center;padding:8px;">${item.type === "weighted" ? `${item.quantity * item.weight} كجم` : `${item.quantity} قطعة`}</td>
+                                <td style="text-align:center;padding:8px;">${item.type === "weighted" ? `${item.quantity} كجم` : `${item.quantity} قطعة`}</td>
                                 <td style="text-align:left;padding:8px;font-weight:700;color:#d4af37;">${item.total.toFixed(2)} ج.م</td>
                             </tr>
                         `,
@@ -189,36 +305,35 @@ window.Invoices = {
         `;
 
     modal.classList.add("show");
-
-    const printBtn = document.getElementById("printInvoiceBtn");
-    if (printBtn) {
-      printBtn.onclick = () => window.print();
-    }
+    document
+      .getElementById("printInvoiceBtn")
+      ?.addEventListener("click", () => window.print());
   },
 
   deleteInvoice(id) {
-    if (this.isUnlocked) return;
+    if (!this.isUnlocked) return;
     if (!confirm("هل أنت متأكد من حذف هذه الفاتورة؟")) return;
 
     window.Storage.deleteInvoice(id);
     window.showToast("تم حذف الفاتورة", "warning");
     this.render();
-    if (window.Dashboard) window.Dashboard.refresh();
+    window.Dashboard?.refresh();
   },
 
   exportInvoices() {
-    if (this.isUnlocked) return;
+    if (!this.isUnlocked) return;
 
-    const invoices = window.Storage.loadInvoices();
-    if (invoices.length === 0) {
-      window.showToast("لا توجد فواتير للتصدير", "warning");
+    const filteredInvoices = this.getFilteredInvoices();
+    if (filteredInvoices.length === 0) {
+      window.showToast("لا توجد فواتير للتصدير في هذه الفترة", "warning");
       return;
     }
 
     let csv = "رقم الفاتورة,التاريخ,العميل,عدد المنتجات,الخصم,الإجمالي\n";
-    invoices.forEach((inv, index) => {
+    filteredInvoices.forEach((inv, index) => {
       const customerName = inv.customerName || "عميل نقدي";
-      csv += `${index + 1},${inv.date || ""},${customerName},${inv.items.length},${inv.discount || 0},${inv.total}\n`;
+      const discountDisplay = inv.discount ? inv.discount.toFixed(2) : "0";
+      csv += `${index + 1},${inv.date || ""},${customerName},${inv.items.length},${discountDisplay},${inv.total.toFixed(2)}\n`;
     });
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

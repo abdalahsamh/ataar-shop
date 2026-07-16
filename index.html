@@ -24,15 +24,13 @@
     <link rel="stylesheet" href="animations.css" />
   </head>
   <body>
-    <!-- ============================================ -->
-    <!-- ===== شاشة الترحيب (Splash Screen) ===== -->
-    <!-- ============================================ -->
+    <!-- ========== شاشة الترحيب (Splash Screen) ========== -->
     <div id="splashScreen">
       <div class="splash-content">
         <div class="splash-logo">
           <i class="fas fa-seedling"></i>
         </div>
-        <h1>عطارة الصعيدي</h1>
+        <h1>محل العطارة</h1>
         <p>نظام البيع المتكامل</p>
         <div class="splash-loader">
           <div class="loader-bar"></div>
@@ -50,7 +48,7 @@
         <div class="sidebar-header">
           <div class="logo">
             <i class="fas fa-seedling"></i>
-            <span>عطارة الصعيدي</span>
+            <span>محل العطارة</span>
           </div>
           <button class="sidebar-toggle" id="sidebarToggle">
             <i class="fas fa-bars"></i>
@@ -119,7 +117,7 @@
           <!-- ===== قسم 1: الرئيسية (Dashboard) ===== -->
           <!-- ============================================ -->
           <section id="section-dashboard" class="section active">
-            <!-- خلفية متحركة + شريط المهام السريعة -->
+            <!-- خلفية متحركة -->
             <div class="dashboard-bg">
               <div class="floating-shapes">
                 <div class="shape shape-1"></div>
@@ -128,7 +126,7 @@
                 <div class="shape shape-4"></div>
                 <div class="shape shape-5"></div>
               </div>
-              <!-- شريط المهام السريعة (جديد) -->
+              <!-- شريط المهام السريعة -->
               <div class="quick-actions">
                 <button onclick="window.navigateTo('pos')" class="quick-btn">
                   <i class="fas fa-cash-register"></i> بيع سريع
@@ -156,7 +154,6 @@
 
             <!-- ===== الكروت الإحصائية ===== -->
             <div class="dashboard-grid">
-              <!-- بطاقة الأرباح الفعلية (جديد) -->
               <div class="stat-card animated-card profit-card" data-delay="0">
                 <div class="stat-icon glow-icon">
                   <i class="fas fa-coins"></i>
@@ -174,7 +171,6 @@
                 </div>
               </div>
 
-              <!-- بطاقة إجمالي الأرباح (المتوقعة) -->
               <div class="stat-card animated-card" data-delay="1">
                 <div class="stat-icon glow-icon">
                   <i class="fas fa-chart-line"></i>
@@ -259,7 +255,6 @@
 
             <!-- ===== صف الجرد والعملاء الأوفياء ===== -->
             <div class="dashboard-row">
-              <!-- بطاقة الجرد اليومي -->
               <div class="inventory-card animated-card" data-delay="6">
                 <h3>📦 الجرد اليومي</h3>
                 <div class="inventory-stats">
@@ -304,7 +299,6 @@
                 </div>
               </div>
 
-              <!-- بطاقة العملاء الأوفياء -->
               <div class="loyalty-card animated-card" data-delay="7">
                 <h3>🏆 العملاء الأوفياء</h3>
                 <div id="loyalCustomersList">
@@ -317,7 +311,6 @@
 
             <!-- ===== صف حركة المنتجات ===== -->
             <div class="dashboard-row">
-              <!-- المنتجات الأكثر مبيعًا -->
               <div class="top-products-card animated-card" data-delay="8">
                 <h3>🔥 أكثر المنتجات مبيعًا</h3>
                 <div id="topProductsList">
@@ -327,7 +320,6 @@
                 </div>
               </div>
 
-              <!-- المنتجات الأقل مبيعًا -->
               <div class="bottom-products-card animated-card" data-delay="9">
                 <h3>❄️ أقل المنتجات مبيعًا</h3>
                 <div id="bottomProductsList">
@@ -625,7 +617,7 @@
           </section>
 
           <!-- ============================================ -->
-          <!-- ===== قسم 8: الفواتير (Invoices) ===== -->
+          <!-- ===== قسم 8: الفواتير (Invoices) - مع الفلتر ===== -->
           <!-- ============================================ -->
           <section id="section-invoices" class="section">
             <div id="invoiceLockScreen">
@@ -694,6 +686,104 @@
                   </button>
                 </div>
               </div>
+
+              <!-- ===== فلتر الأيام (جديد) ===== -->
+              <div
+                style="
+                  background: #f8f9fa;
+                  padding: 15px;
+                  border-radius: 12px;
+                  margin-bottom: 20px;
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 10px;
+                  align-items: center;
+                "
+              >
+                <span
+                  style="font-weight: 700; color: #1a3c34; margin-left: 10px"
+                  >📅 الفلترة:</span
+                >
+
+                <button
+                  onclick="window.Invoices.setFilter('today')"
+                  class="btn-filter"
+                  id="filterToday"
+                >
+                  اليوم
+                </button>
+                <button
+                  onclick="window.Invoices.setFilter('week')"
+                  class="btn-filter"
+                  id="filterWeek"
+                >
+                  هذا الأسبوع
+                </button>
+                <button
+                  onclick="window.Invoices.setFilter('month')"
+                  class="btn-filter"
+                  id="filterMonth"
+                >
+                  هذا الشهر
+                </button>
+                <button
+                  onclick="window.Invoices.setFilter('all')"
+                  class="btn-filter active-filter"
+                  id="filterAll"
+                >
+                  الكل
+                </button>
+
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-right: 15px;
+                    border-right: 2px solid #e8e0d0;
+                    padding-right: 15px;
+                  "
+                >
+                  <label
+                    style="font-size: 14px; font-weight: 600; color: #1a3c34"
+                    >من:</label
+                  >
+                  <input
+                    type="date"
+                    id="filterDateFrom"
+                    style="
+                      padding: 6px 10px;
+                      border: 2px solid #e8e0d0;
+                      border-radius: 8px;
+                      font-family: &quot;Tajawal&quot;, sans-serif;
+                      font-size: 13px;
+                    "
+                  />
+                  <label
+                    style="font-size: 14px; font-weight: 600; color: #1a3c34"
+                    >إلى:</label
+                  >
+                  <input
+                    type="date"
+                    id="filterDateTo"
+                    style="
+                      padding: 6px 10px;
+                      border: 2px solid #e8e0d0;
+                      border-radius: 8px;
+                      font-family: &quot;Tajawal&quot;, sans-serif;
+                      font-size: 13px;
+                    "
+                  />
+                  <button
+                    onclick="window.Invoices.setCustomFilter()"
+                    class="btn-primary"
+                    style="padding: 6px 16px; font-size: 13px"
+                  >
+                    تطبيق
+                  </button>
+                </div>
+              </div>
+
               <table class="invoices-table">
                 <thead>
                   <tr>
@@ -925,7 +1015,7 @@
     </div>
 
     <!-- ============================================ -->
-    <!-- ===== ملفات الجافا سكريبت (من غير مجلد js) ===== -->
+    <!-- ===== ملفات الجافا سكريبت ===== -->
     <!-- ============================================ -->
     <script src="storage.js"></script>
     <script src="customers.js"></script>
@@ -938,7 +1028,6 @@
     <script src="dashboard.js"></script>
     <script src="app.js"></script>
 
-    <!-- دالة التنقل السريع -->
     <script>
       window.navigateTo = function (sectionId) {
         const btn = document.querySelector(

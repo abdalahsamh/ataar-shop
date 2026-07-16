@@ -2,6 +2,8 @@
 
 window.POS = {
   cart: [],
+  selectedWeight: null,
+  selectedProductId: null,
   currentCustomer: null,
   currentDiscount: null,
 
@@ -23,17 +25,18 @@ window.POS = {
 
     grid.innerHTML = products
       .map((p) => {
+        const typeIcon = p.type === "weighted" ? "⚖️" : "🥫";
         const priceDisplay =
           p.type === "weighted"
             ? `${Object.values(p.prices)[0]?.toFixed(2) || 0} ج.م`
-            : `${p.price?.toFixed(2) || 0} ج.م`;
+            : `${p.price.toFixed(2)} ج.م`;
         const stockDisplay =
           p.type === "weighted" ? `${p.stock} كجم` : `${p.stock} قطعة`;
 
         return `
                 <div class="pos-item" data-id="${p.id}" onclick="window.POS.selectProduct(${p.id})">
                     <div class="product-icon"><i class="fas ${p.icon || "fa-box"}"></i></div>
-                    <div class="product-name">${p.type === "weighted" ? "⚖️" : "🥫"} ${p.name}</div>
+                    <div class="product-name">${typeIcon} ${p.name}</div>
                     <div class="product-price">${priceDisplay}</div>
                     <div class="product-stock">المتبقي: ${stockDisplay}</div>
                 </div>
@@ -103,7 +106,7 @@ window.POS = {
       window.showToast("هذا الوزن غير متوفر", "error");
       return;
     }
-    if (product.stock < weight) {
+    if (product.stock < parseFloat(weight)) {
       window.showToast(
         `المخزون غير كافٍ (المتبقي: ${product.stock} كجم)`,
         "error",
@@ -111,15 +114,14 @@ window.POS = {
       return;
     }
 
-    this.addToCart(productId, weight, price);
+    // ✅ التعديل هنا: بنضيف الوزن مباشرة (quantity = الوزن الفعلي)
+    this.addToCart(productId, parseFloat(weight), price);
     document.getElementById("weightModal")?.remove();
   },
 
   addToCart(productId, quantity, customPrice = null) {
     const product = window.Storage.getProductById(productId);
     if (!product) return;
-
-    const price = customPrice || product.price;
 
     const existing = this.cart.find(
       (item) =>
@@ -128,7 +130,10 @@ window.POS = {
           (!product.type === "weighted" && item.quantity === quantity)),
     );
 
+    const price = customPrice || product.price;
+
     if (existing) {
+      // ✅ زيادة الكمية (وزن مضاف)
       existing.quantity += quantity;
       existing.total = existing.quantity * price;
     } else {
@@ -137,16 +142,65 @@ window.POS = {
         name: product.name,
         type: product.type,
         weight: product.type === "weighted" ? quantity : null,
-        quantity: product.type === "weighted" ? quantity : 1,
+        quantity: quantity, // ✅ الوزن الفعلي (0.5 أو 0.25 أو 0.125)
         price: price,
         purchasePrice: product.purchasePrice || 0,
-        total: price * (product.type === "weighted" ? quantity : 1),
+        total: price * quantity,
       });
     }
 
+    this.animateFly(productId);
     this.renderCart();
     this.applyDiscount();
     window.showToast(`تم إضافة ${product.name}`, "success");
+  },
+
+  animateFly(productId) {
+    const item = document.querySelector(`.pos-item[data-id="${productId}"]`);
+    if (!item) return;
+
+    const rect = item.getBoundingClientRect();
+    const flyElement = item.cloneNode(true);
+    flyElement.className = "fly-animation";
+    flyElement.style.position = "fixed";
+    flyElement.style.left = rect.left + "px";
+    flyElement.style.top = rect.top + "px";
+    flyElement.style.width = rect.width + "px";
+    flyElement.style.zIndex = "9999";
+    flyElement.style.pointerEvents = "none";
+    flyElement.style.background = "#d4af37";
+    flyElement.style.borderRadius = "12px";
+    flyElement.style.padding = "10px";
+    flyElement.style.color = "#1a3c34";
+    flyElement.style.fontWeight = "700";
+    flyElement.style.boxShadow = "0 8px 30px rgba(0,0,0,0.3)";
+    document.body.appendChild(flyElement);
+
+    const cart = document.querySelector(".pos-cart");
+    if (cart) {
+      const cartRect = cart.getBoundingClientRect();
+      flyElement.style.transition =
+        "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)";
+      setTimeout(() => {
+        flyElement.style.left =
+          cartRect.left + cartRect.width / 2 - rect.width / 2 + "px";
+        flyElement.style.top =
+          cartRect.top + cartRect.height / 2 - rect.height / 2 + "px";
+        flyElement.style.transform = "scale(0.2) rotate(360deg)";
+        flyElement.style.opacity = "0";
+      }, 50);
+      setTimeout(() => {
+        flyElement.remove();
+        document.querySelector(".pos-cart")?.classList.add("cart-shake");
+        setTimeout(
+          () =>
+            document.querySelector(".pos-cart")?.classList.remove("cart-shake"),
+          400,
+        );
+      }, 700);
+    } else {
+      setTimeout(() => flyElement.remove(), 700);
+    }
   },
 
   renderCart() {
@@ -164,18 +218,23 @@ window.POS = {
       .map((item, index) => {
         const detail =
           item.type === "weighted"
-            ? `وزن: ${item.weight} كجم`
+            ? `وزن: ${item.quantity} كجم` // ✅ عرض الوزن الفعلي
             : `العدد: ${item.quantity}`;
+        const profit = item.price - item.purchasePrice;
+        const profitDisplay =
+          profit > 0 ? `ربح: ${(profit * item.quantity).toFixed(2)} ج.م` : "";
+
         return `
                 <div class="cart-item">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-detail">${detail}</div>
+                        ${profitDisplay ? `<div class="cart-item-profit" style="font-size:11px;color:#28a745;">${profitDisplay}</div>` : ""}
                     </div>
                     <div class="cart-item-qty">
-                        <button onclick="window.POS.updateCartQty(${index}, -1)">-</button>
+                        <button onclick="window.POS.updateCartQty(${index}, -0.125)">-</button>
                         <span>${item.quantity}</span>
-                        <button onclick="window.POS.updateCartQty(${index}, 1)">+</button>
+                        <button onclick="window.POS.updateCartQty(${index}, 0.125)">+</button>
                     </div>
                     <div class="cart-item-total">${item.total.toFixed(2)}</div>
                     <button class="cart-item-remove" onclick="window.POS.removeFromCart(${index})"><i class="fas fa-times"></i></button>
@@ -196,7 +255,7 @@ window.POS = {
     if (index < 0 || index >= this.cart.length) return;
 
     const item = this.cart[index];
-    const newQty = item.quantity + delta;
+    const newQty = Math.round((item.quantity + delta) * 1000) / 1000; // دقة 3 أرقام عشرية
 
     if (newQty <= 0) {
       this.removeFromCart(index);
@@ -205,7 +264,7 @@ window.POS = {
 
     const product = window.Storage.getProductById(item.productId);
     if (product) {
-      if (item.type === "weighted" && product.stock < newQty * item.weight) {
+      if (item.type === "weighted" && product.stock < newQty) {
         window.showToast("المخزون غير كافٍ", "error");
         return;
       } else if (item.type === "fixed" && product.stock < newQty) {
@@ -227,42 +286,32 @@ window.POS = {
   },
 
   setupEvents() {
-    const search = document.getElementById("posSearch");
-    if (search) {
-      search.addEventListener("input", (e) => {
-        this.filterProducts(e.target.value);
-      });
-    }
+    document.getElementById("posSearch")?.addEventListener("input", (e) => {
+      this.filterProducts(e.target.value);
+    });
 
-    const checkoutBtn = document.getElementById("checkoutBtn");
-    if (checkoutBtn) {
-      checkoutBtn.addEventListener("click", () => {
-        this.checkout();
-      });
-    }
+    document.getElementById("checkoutBtn")?.addEventListener("click", () => {
+      this.checkout();
+    });
 
-    const clearBtn = document.getElementById("clearCartBtn");
-    if (clearBtn) {
-      clearBtn.addEventListener("click", () => {
-        if (this.cart.length === 0) return;
-        if (confirm("هل أنت متأكد من تفريغ السلة؟")) {
-          this.cart = [];
-          this.currentCustomer = null;
-          this.currentDiscount = null;
-          this.renderCart();
-          document.getElementById("customerDisplay").style.display = "none";
-          document.getElementById("discountDisplay").innerHTML = "";
-          window.showToast("تم تفريغ السلة", "info");
-        }
-      });
-    }
+    document.getElementById("clearCartBtn")?.addEventListener("click", () => {
+      if (this.cart.length === 0) return;
+      if (confirm("هل أنت متأكد من تفريغ السلة؟")) {
+        this.cart = [];
+        this.currentCustomer = null;
+        this.currentDiscount = null;
+        this.renderCart();
+        document.getElementById("customerDisplay").style.display = "none";
+        document.getElementById("discountDisplay").innerHTML = "";
+        window.showToast("تم تفريغ السلة", "info");
+      }
+    });
 
-    const selectCustomerBtn = document.getElementById("selectCustomerBtn");
-    if (selectCustomerBtn) {
-      selectCustomerBtn.addEventListener("click", () => {
+    document
+      .getElementById("selectCustomerBtn")
+      ?.addEventListener("click", () => {
         this.selectCustomer();
       });
-    }
   },
 
   filterProducts(query) {
@@ -274,6 +323,7 @@ window.POS = {
     });
   },
 
+  // ===== Customer functions =====
   selectCustomer() {
     const customers = window.Storage.loadCustomers();
     if (customers.length === 0) {
@@ -318,6 +368,7 @@ window.POS = {
     this.applyDiscount();
   },
 
+  // ===== Discount functions =====
   applyDiscount() {
     const total = this.cart.reduce((sum, item) => sum + item.total, 0);
     if (total === 0) {
@@ -327,7 +378,12 @@ window.POS = {
       return;
     }
 
-    const discountResult = window.Discounts.calculateDiscount(total);
+    const customerId = this.currentCustomer?.id || null;
+    const discountResult = window.Discounts.calculateDiscount(
+      total,
+      customerId,
+    );
+
     if (discountResult && discountResult.amount > 0) {
       this.currentDiscount = discountResult;
       this.updateDiscountUI(discountResult);
@@ -356,41 +412,61 @@ window.POS = {
     }
   },
 
+  // ===== Checkout (المعدل) =====
   checkout() {
     if (this.cart.length === 0) {
       window.showToast("السلة فارغة!", "error");
       return;
     }
 
-    // Check stock
+    let canCheckout = true;
+    const updates = [];
+
     for (const item of this.cart) {
       const product = window.Storage.getProductById(item.productId);
       if (!product) {
         window.showToast(`المنتج ${item.name} غير موجود`, "error");
-        return;
+        canCheckout = false;
+        break;
       }
 
       if (item.type === "weighted") {
-        if (product.stock < item.quantity * item.weight) {
-          window.showToast(`المخزون غير كافٍ لـ ${item.name}`, "error");
-          return;
+        // ✅ التعديل الأساسي: needed = الوزن الفعلي (item.quantity) مباشرة
+        const needed = item.quantity;
+        if (product.stock < needed) {
+          window.showToast(
+            `المخزون غير كافٍ لـ ${item.name} (المتبقي: ${product.stock} كجم)`,
+            "error",
+          );
+          canCheckout = false;
+          break;
         }
+        updates.push({ id: item.productId, qty: needed, weighted: true });
       } else {
         if (product.stock < item.quantity) {
-          window.showToast(`المخزون غير كافٍ لـ ${item.name}`, "error");
-          return;
+          window.showToast(
+            `المخزون غير كافٍ لـ ${item.name} (المتبقي: ${product.stock})`,
+            "error",
+          );
+          canCheckout = false;
+          break;
         }
+        updates.push({
+          id: item.productId,
+          qty: item.quantity,
+          weighted: false,
+        });
       }
     }
 
-    // Deduct stock
-    for (const item of this.cart) {
-      const qty =
-        item.type === "weighted" ? item.quantity * item.weight : item.quantity;
-      window.Storage.updateStock(item.productId, qty);
+    if (!canCheckout) return;
+
+    // خصم المخزون
+    for (const update of updates) {
+      window.Storage.updateStock(update.id, update.qty, update.weighted);
     }
 
-    // Calculate totals
+    // حساب الإجماليات
     const subtotal = this.cart.reduce((sum, item) => sum + item.total, 0);
     let discountAmount = 0;
     let discountName = null;
@@ -402,14 +478,14 @@ window.POS = {
       finalTotal = this.currentDiscount.finalTotal;
     }
 
-    // Create invoice
+    // إنشاء الفاتورة
     const invoice = {
       items: this.cart.map((item) => ({
         productId: item.productId,
         name: item.name,
         type: item.type,
         weight: item.weight,
-        quantity: item.quantity,
+        quantity: item.quantity, // ✅ الوزن الفعلي
         price: item.price,
         purchasePrice: item.purchasePrice || 0,
         total: item.total,
@@ -469,8 +545,12 @@ window.POS = {
                             (item) => `
                             <tr style="border-bottom:1px solid #f0ebe0;">
                                 <td style="padding:8px;">${item.name}</td>
-                                <td style="text-align:center;padding:8px;">${item.type === "weighted" ? `${item.quantity * item.weight} كجم` : `${item.quantity} قطعة`}</td>
-                                <td style="text-align:left;padding:8px;font-weight:700;color:#d4af37;">${item.total.toFixed(2)} ج.م</td>
+                                <td style="text-align:center;padding:8px;">
+                                    ${item.type === "weighted" ? `${item.quantity} كجم` : `${item.quantity} قطعة`}
+                                </td>
+                                <td style="text-align:left;padding:8px;font-weight:700;color:#d4af37;">
+                                    ${item.total.toFixed(2)} ج.م
+                                </td>
                             </tr>
                         `,
                           )
